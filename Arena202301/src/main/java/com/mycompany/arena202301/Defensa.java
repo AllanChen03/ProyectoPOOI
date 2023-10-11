@@ -5,6 +5,7 @@
 package com.mycompany.arena202301;
 
 import java.awt.Color;
+import javax.swing.JLabel;
 
 /**
  *
@@ -16,6 +17,31 @@ public class Defensa extends Personaje{
         super(nombre, color, golpe);
     }
 
+    public String getNombre() {
+        return nombre;
+    }
+
+
+    public int getVida() {
+        return vida;
+    }
+
+    public int getGolpe() {
+        return golpe;
+    }
+
+    public JLabel getLabel() {
+        return label;
+    }
+
+    public void setVida(int vida) {
+        this.vida = vida;
+    }
+
+    public void setGolpe(int golpe) {
+        this.golpe = golpe;
+    }
+    
     
     
     @Override
