@@ -4,7 +4,7 @@
  */
 package com.mycompany.arena202301;
 
-import java.awt.Color;
+
 import javax.swing.JLabel;
 
 /**
@@ -13,8 +13,8 @@ import javax.swing.JLabel;
  */
 public class Defensa extends Personaje{
 
-    public Defensa(String nombre, Color color, int golpe) {
-        super(nombre, color, golpe);
+    public Defensa(String nombre, int espacios, int daño, int golpes) {
+        super(nombre, espacios, daño, golpes);
     }
 
     public String getNombre() {
@@ -26,8 +26,8 @@ public class Defensa extends Personaje{
         return vida;
     }
 
-    public int getGolpe() {
-        return golpe;
+    public int getDaño() {
+        return daño;
     }
 
     public JLabel getLabel() {
@@ -39,13 +39,17 @@ public class Defensa extends Personaje{
     }
 
     public void setGolpe(int golpe) {
-        this.golpe = golpe;
+        this.daño = daño;
     }
     
     
     
     @Override
     public void pelear() {
+        
+    }
+    
+    public void morir(){
         
     }
     

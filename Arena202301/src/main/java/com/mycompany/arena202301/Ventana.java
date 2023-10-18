@@ -4,23 +4,42 @@
  */
 package com.mycompany.arena202301;
 
-import java.awt.Color;
+import java.awt.Component;
 import java.awt.LayoutManager;
+import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import static java.lang.Thread.sleep;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import java.util.Random;
+import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.Timer;
 import javax.swing.TransferHandler;
+import javax.transaction.xa.Xid;
 
 public class Ventana extends javax.swing.JFrame {
     ArrayList<ThreadPersonaje> zombies;
     ArrayList<ThreadPersonaje> defensas;
+    ArrayList<Personaje> defensasAtacar;
+    private Map<Point, Defensa> posicionDefensas  = new HashMap<>();
+    private Map<Point, Zombie> posicionZombies = new HashMap<>();
+    private Map<JLabel, Zombie> labelZombie = new HashMap<>();
     Tablero tableroJuego;
     private String tipoDefensa = null;
+    private int nivel = 1;
+    private int cantEjercito = 15;
+    private int espaciosUtilizados = 0;
+    private Fuente fuente;
+    boolean perdedor = false;
+    String infoFinal= " ";
     
     //ArrayList<Zombie> vivos;
     
@@ -32,23 +51,28 @@ public class Ventana extends javax.swing.JFrame {
     public Ventana() {
         zombies = new ArrayList<ThreadPersonaje>();
         defensas = new ArrayList<ThreadPersonaje>();
-        tableroJuego = new Tablero();
-        initComponents();
-        fuente();
-        generarZombies(20);
+        defensasAtacar = new ArrayList<Personaje>();
+        initComponents();       
         ejercito();
-        
         pnlPrincipal.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (tipoDefensa != null) {
                     int x = e.getX() / 40;
                     int y = e.getY() / 40;
-                    setDefense(tipoDefensa, x, y);
+                    colocarDefensa(tipoDefensa, x, y,cantEjercito+(nivel*5), espaciosUtilizados, nivel);
                 }
             }
         });
+        iniciarJuego(nivel);
         
+    }
+    
+    public void iniciarJuego(int nivel){
+        infoFinal = " ";
+        tableroJuego = new Tablero();
+        fuente();
+        generarZombies(cantEjercito+(nivel*5));
     }
     
     public void fuente(){
@@ -56,14 +80,15 @@ public class Ventana extends javax.swing.JFrame {
                 + "\\Introclases23II\\Arena202301\\src\\main\\java\\com\\mycompany\\arena202301\\img\\";
         JLabel label = new JLabel("Fuente");
         label.setIcon(new ImageIcon(path + "fuente.png"));
+        fuente = new Fuente(300, label);
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
-                tableroJuego.setValorEnCoordenadas(11+i, 11+j, 2);
+                tableroJuego.setValorEnCoordenadas(11+i, 11+j, 3);
             }    
         }
         pnlPrincipal.add(label);
         label.setSize(120, 120);
-        label.setLocation(12*40, 12*40);
+        label.setLocation(11*40, 11*40);
         
         
     }
@@ -167,67 +192,116 @@ public class Ventana extends javax.swing.JFrame {
         Random random = new Random();
         String path = "C:\\Users\\User\\Documents\\Universidad\\II Semestre 2023"
                 + "\\Introclases23II\\Arena202301\\src\\main\\java\\com\\mycompany\\arena202301\\img\\";
-        for (int i = 0; i < size; i++) {
+        int porcentaje = (new Random()).nextInt(16);
+        int contadorContacto = 0;
+        int contadorMedio = 0;
+        int contadorVolador = 0;
+        int contadorChoque = 0;
+        for (int i = 0; i < size; i++) {      
             String tipoZombie = tiposDeZombies[random.nextInt(tiposDeZombies.length)];
             if ("Contacto".equals(tipoZombie)){
+                contadorContacto +=1;
                 JLabel label = new JLabel("Contacto");
+                label.setName(label.getText()+ contadorContacto);
                 label.setIcon(new ImageIcon(path + "zombie.png"));
-                Zombie zombie = new Zombie("Contacto", Color.yellow, 5);
+                Zombie zombie = new Zombie("Contacto", 1, 5+((nivel-1)*(porcentaje)/10),0);
                 zombie.setLabel(label);
 
                 // Crear el thread
                 ThreadPersonaje tp =  new ThreadPersonaje(zombie, this);
                 zombies.add(tp);
-
                 pnlPrincipal.add(label);
-                setAparicion(label);
+                colocarZombie(zombie);
                 label.setSize(40, 40);  
+                label.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        mostrarInformacion(zombie); 
+                    }
+                });
+                infoFinal += "Zombie tipo: " + zombie.getLabel().getName() + " Vida inicial: " 
+                        + zombie.getVida() + " Poder de golpe: " + zombie.getDaño() + "\n";
             } else if ("Medioalcance".equals(tipoZombie)){
+                contadorMedio += 1;
                 JLabel label = new JLabel("Medioalcance");
                 label.setIcon(new ImageIcon(path + "medioalcance.png"));
-                Zombie zombie = new Zombie("Medioalcance", Color.yellow, 3);
+                Zombie zombie = new Zombie("Medioalcance",1, 2+((nivel-1)*(porcentaje)/10),0);
                 zombie.setLabel(label);
+                label.setName(label.getText()+ contadorMedio);
 
                 // Crear el thread
                 ThreadPersonaje tp =  new ThreadPersonaje(zombie, this);
                 zombies.add(tp);
-
+    
                 pnlPrincipal.add(label);
-                setAparicion(label);
+                colocarZombie(zombie);
                 label.setSize(40, 40);
+                label.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        mostrarInformacion(zombie); 
+                    }
+                });
+                infoFinal += "Zombie tipo: " + zombie.getLabel().getName() + " Vida inicial: " 
+                        + zombie.getVida() + " Poder de golpe: " + zombie.getDaño() + "\n";
             } else if ("Volador".equals(tipoZombie)){
+                contadorVolador += 1;
                 JLabel label = new JLabel("Volador");
                 label.setIcon(new ImageIcon(path + "volador.png"));
-                Zombie zombie = new Zombie("Volador", Color.yellow, 3);
+                Zombie zombie = new Zombie("Volador", 1, 3+((nivel-1)*(porcentaje)/10),0);
                 zombie.setLabel(label);
+                label.setName(label.getText()+ contadorVolador);
 
                 // Crear el thread
                 ThreadPersonaje tp =  new ThreadPersonaje(zombie, this);
                 zombies.add(tp);
-
                 pnlPrincipal.add(label);
-                setAparicion(label);
+                colocarZombie(zombie);
                 label.setSize(40, 40);
+                label.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        mostrarInformacion(zombie); 
+                    }
+                });
+                infoFinal += "Zombie tipo: " + zombie.getLabel().getName() + " Vida inicial: " 
+                        + zombie.getVida()  + " Poder de golpe: " + zombie.getDaño() + "\n";
             } else if ("Choque".equals(tipoZombie)){
+                contadorChoque += 1;
                 JLabel label = new JLabel("Choque");
                 label.setIcon(new ImageIcon(path + "choque.png"));
-                Zombie zombie = new Zombie("Choque", Color.yellow, 20);
+                Zombie zombie = new Zombie("Choque", 1, 10+((nivel-1)*(porcentaje/10)),0);
                 zombie.setLabel(label);
+                label.setName(label.getText()+ contadorChoque);
 
                 // Crear el thread
                 ThreadPersonaje tp =  new ThreadPersonaje(zombie, this);
                 zombies.add(tp);
 
                 pnlPrincipal.add(label);
-                setAparicion(label);
+                colocarZombie(zombie);
                 label.setSize(40, 40);
-            }
+                label.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        mostrarInformacion(zombie); 
+                    }
+                });
+                infoFinal += "Zombie tipo: " + zombie.getLabel().getName() + " Vida inicial: " 
+                        + zombie.getVida()  + " Poder de golpe: " + zombie.getDaño() + "\n";
+            } 
             
         }
     }
+    private void mostrarInformacion(Zombie zombie){
+        String informacion = "Zombie tipo: " + zombie.getNombre() + "\n" 
+                + "Vida: "+zombie.getVida() + "\n" + "Golpes: " + zombie.getGolpes() + " de: " 
+                + zombie.getDaño() + " de daño";
+        JOptionPane.showMessageDialog(pnlPrincipal, informacion);
+    }
     
     
-    public void setAparicion(JLabel label) {
+    public void colocarZombie(Zombie zombie) {
         int colRow = (new Random()).nextInt(2);
         int dir = (new Random()).nextInt(2);
         int x;
@@ -255,12 +329,17 @@ public class Ventana extends javax.swing.JFrame {
 
         if (tableroJuego.getTablero()[x][y] == 0) {
             tableroJuego.setValorEnCoordenadas(x, y, 1); 
+            JLabel label = zombie.getLabel();
+            posicionZombies.put(new Point(x,y),zombie);
+            labelZombie.put(label,zombie);
             label.setLocation(x * 40, y * 40);
         }
     }
 
 
-    public void moverLabel(JLabel label) {
+    public void moverLabel(JLabel label) throws InterruptedException {
+        Zombie zombie = labelZombie.get(label);
+        String tipoGolpe = zombie.getNombre();
         int lastX = label.getX() / 40; 
         int lastY = label.getY() / 40; 
 
@@ -302,20 +381,46 @@ public class Ventana extends javax.swing.JFrame {
 
         
         if (esMovimientoValido(newX, newY)) {
-            
-            tableroJuego.setValorEnCoordenadas(lastX, lastY, 0);
+            /*if(zombie.getNombre().equals("Medioalcance")){
+                if (lastX+3 < 25 && lastY + 3 <25 && lastX - 3 >= 0 && lastY - 3 >= 0){
+                    if (tableroJuego.getTablero()[lastX+3][lastY] == 2){
+                        ataqueZombieMedio(lastX,lastY,lastX+3,lastY,zombie);
+                    } else if (tableroJuego.getTablero()[lastX][lastY+3] == 2){
+                        ataqueZombieMedio(lastX,lastY,lastX,lastY+3,zombie);
+                    } else if (tableroJuego.getTablero()[lastX-3][lastY] == 2){
+                        ataqueZombieMedio(lastX,lastY,lastX-3,lastY,zombie);
+                    } else if (tableroJuego.getTablero()[lastX][lastY-3] == 2){
+                        ataqueZombieMedio(lastX,lastY,lastX,lastY-3,zombie);
+                    }
+                } else{
+                    tableroJuego.setValorEnCoordenadas(lastX, lastY, 0);
+                    tableroJuego.setValorEnCoordenadas(newX, newY, 1);
+                    posicionZombies.remove(new Point(lastX,lastY));
+                    posicionZombies.put(new Point(newX, newY), zombie);
+                    int x = newX * 40;
+                    int y = newY * 40;
+                    label.setLocation(x, y);
+                }        
+            }*/ 
+            if (tableroJuego.getTablero()[newX][newY] == 2) {
+                atacarDefensa(newX,newY, zombie);
+                sleep(1000);
+                
+            }else if(tableroJuego.getTablero()[newX][newY] == 3){
+                atacarFuente(newX,newY, zombie);
+                sleep(1000);
+            }
+            else {
+                tableroJuego.setValorEnCoordenadas(lastX, lastY, 0);
+                tableroJuego.setValorEnCoordenadas(newX, newY, 1);
+                posicionZombies.remove(new Point(lastX,lastY));
+                posicionZombies.put(new Point(newX, newY), zombie);
+                int x = newX * 40;
+                int y = newY * 40;
+                label.setLocation(x, y);
 
-            
-            tableroJuego.setValorEnCoordenadas(newX, newY, 1);
-
-            
-            int x = newX * 40;
-            int y = newY * 40;
-
-            
-            label.setLocation(x, y);
+            }
         }
-        
     }
 
     private boolean esMovimientoValido(int x, int y) {
@@ -325,84 +430,549 @@ public class Ventana extends javax.swing.JFrame {
         return false;
     }
     
-    public void setDefense(String tipo,int x, int y) {
+    public void colocarDefensa(String tipo,int x, int y, int espaciosTotales, int espaciosUtilizados, int nivel) {
         String path = "C:\\Users\\User\\Documents\\Universidad\\II Semestre 2023"
                 + "\\Introclases23II\\Arena202301\\src\\main\\java\\com\\mycompany\\arena202301\\img\\";
-        
-        if (tableroJuego.getTablero()[x][y] == 0) {
-            if (tipo.equals("Contacto")) {
-            JLabel contacto = new JLabel("Contacto");
-            contacto.setIcon(new ImageIcon(path + "contactoP.png"));
-            Defensa defensa = new Defensa("Contacto", Color.yellow, 5);
-            defensa.setLabel(contacto);
+        Map<String, Integer> espaciosDefensa = new HashMap<String, Integer>() {{
+            put("Contacto", 1);
+            put("Aereo", 3);
+            put("MedioAlcance", 2);
+            put("Impacto", 4);
+            put("Bloque", 1);
+            put("Multiple", 5);
+        }};
+        int contadorContacto = 0;
+        int contadorMedio = 0;
+        int contadorImpacto = 0;
+        int contadorMultiple = 0;
+        int contadorAereo = 0;
+        if (espaciosUtilizados + espaciosDefensa.get(tipo) <= espaciosTotales){
+            if(tableroJuego.getTablero()[x][y] == 0){
+                if (tipo.equals("Contacto")) {
+                    contadorContacto += 1;
+                    JLabel contacto = new JLabel("Contacto");
+                    contacto.setIcon(new ImageIcon(path + "contactoP.png"));
+                    Defensa defensa = new Defensa("Contacto", 1, 5,0);
+                    defensa.setLabel(contacto);
+                    contacto.setName("Contacto" + contadorContacto);
 
-            ThreadPersonaje tp = new ThreadPersonaje(defensa,this);
-            defensas.add(tp);
-            pnlPrincipal.add(contacto);
-            contacto.setSize(40,40);
-            contacto.setLocation(x*40, y*40);
-            } else if(tipo.equals("Aereo")){
-                JLabel aereo = new JLabel("Aereo");
-                aereo.setIcon(new ImageIcon(path + "aereo.png"));
-                Defensa defensa = new Defensa("Aereo", Color.yellow, 5);
-                defensa.setLabel(aereo);
+                    ThreadPersonaje tp = new ThreadPersonaje(defensa,this);
+                    defensas.add(tp);
+                    defensasAtacar.add(defensa);
+                    pnlPrincipal.add(contacto);
+                    contacto.setSize(40,40);
+                    contacto.setLocation(x*40, y*40);
+                    tableroJuego.setValorEnCoordenadas(x, y, 2);
+                    actualizarEspacios(espaciosDefensa.get(tipo));
+                    posicionDefensas.put(new Point(x,y), defensa);
 
-                ThreadPersonaje tp = new ThreadPersonaje(defensa,this);
-                defensas.add(tp);
-                pnlPrincipal.add(aereo);
-                aereo.setSize(40,40);
-                aereo.setLocation(x*40, y*40);
-            } else if(tipo.equals("MedioAlcance")){
-                JLabel medioalcance = new JLabel("MedioAlcance");
-                medioalcance.setIcon(new ImageIcon(path + "medio2.png"));
-                Defensa defensa = new Defensa("Contacto", Color.yellow, 5);
-                //defensa.setLabel(contacto);
 
-                //ThreadPersonaje tp = new ThreadPersonaje(defensa,this);
-                //defensas.add(tp);
-                pnlPrincipal.add(medioalcance);
-                medioalcance.setSize(40,40);
-                medioalcance.setLocation(x*40, y*40);
-            } else if(tipo.equals("Impacto")){
-                JLabel impacto = new JLabel("Impacto");
-                impacto.setIcon(new ImageIcon(path + "mina.png"));
-                //Defensa defensa = new Defensa("Contacto", color.yellow, 5);
-                //defensa.setLabel(contacto);
+                } else if(tipo.equals("Aereo")){
+                    contadorAereo +=1;
+                    JLabel aereo = new JLabel("Aereo");
+                    aereo.setIcon(new ImageIcon(path + "aereo.png"));
+                    Defensa defensa = new Defensa("Aereo", 3, 5,0);
+                    defensa.setLabel(aereo);
+                    aereo.setName("Aereo" + contadorAereo);
 
-                //ThreadPersonaje tp = new ThreadPersonaje(defensa,this);
-                //defensas.add(tp);
-                pnlPrincipal.add(impacto);
-                impacto.setSize(40,40);
-                impacto.setLocation(x*40, y*40);
-            } else if(tipo.equals("Bloque")){
-                JLabel bloque = new JLabel("Bloque");
-                bloque.setIcon(new ImageIcon(path + "nuez.png"));
-                //Defensa defensa = new Defensa("Contacto", color.yellow, 5);
-                //defensa.setLabel(contacto);
+                    ThreadPersonaje tp = new ThreadPersonaje(defensa,this);
+                    defensas.add(tp);
+                    defensasAtacar.add(defensa);
+                    pnlPrincipal.add(aereo);
+                    aereo.setSize(40,40);
+                    aereo.setLocation(x*40, y*40); 
+                    tableroJuego.setValorEnCoordenadas(x, y, 2);
+                    actualizarEspacios(espaciosDefensa.get(tipo));
+                    posicionDefensas.put(new Point(x,y), defensa);
+                } else if(tipo.equals("MedioAlcance")){
+                    contadorMedio +=1;
+                    JLabel medioalcance = new JLabel("MedioAlcance");
+                    medioalcance.setIcon(new ImageIcon(path + "medio2.png"));
+                    Defensa defensa = new Defensa("MedioAlcance", 2, 5,0);
+                    defensa.setLabel(medioalcance);
+                    medioalcance.setName("Medio Alcance" + contadorMedio);
 
-                //ThreadPersonaje tp = new ThreadPersonaje(defensa,this);
-                //defensas.add(tp);
-                pnlPrincipal.add(bloque);
-                bloque.setSize(40,40);
-                bloque.setLocation(x*40, y*40);
-            } else if(tipo.equals("Multiple")){
-                JLabel multiple = new JLabel("Multiple");
-                multiple.setIcon(new ImageIcon(path + "multiple.png"));
-                //Defensa defensa = new Defensa("Contacto", color.yellow, 5);
-                //defensa.setLabel(contacto);
+                    ThreadPersonaje tp = new ThreadPersonaje(defensa,this);
+                    defensas.add(tp);
+                    defensasAtacar.add(defensa);
+                    pnlPrincipal.add(medioalcance);
+                    medioalcance.setSize(40,40);
+                    medioalcance.setLocation(x*40, y*40); 
+                    tableroJuego.setValorEnCoordenadas(x, y, 2);
+                    actualizarEspacios(espaciosDefensa.get(tipo));
+                    posicionDefensas.put(new Point(x,y), defensa);
+                } else if(tipo.equals("Bloque")){
+                    JLabel bloque = new JLabel("Bloque");
+                    bloque.setIcon(new ImageIcon(path + "nuez.png"));
+                    Defensa defensa = new Defensa("Bloque", 1, 5,0);
+                    defensa.setLabel(bloque);
 
-                //ThreadPersonaje tp = new ThreadPersonaje(defensa,this);
-                //defensas.add(tp);
-                pnlPrincipal.add(multiple);
-                multiple.setSize(40,40);
-                multiple.setLocation(x*40, y*40);
+                    ThreadPersonaje tp = new ThreadPersonaje(defensa,this);
+                    defensas.add(tp);
+                    defensasAtacar.add(defensa);
+                    pnlPrincipal.add(bloque);
+                    bloque.setSize(40,40);
+                    bloque.setLocation(x*40, y*40); 
+                    tableroJuego.setValorEnCoordenadas(x, y, 2);
+                    actualizarEspacios(espaciosDefensa.get(tipo));
+                    posicionDefensas.put(new Point(x,y), defensa);
+                } else if(tipo.equals("Impacto")){
+                    contadorImpacto+=1;
+                    JLabel impacto = new JLabel("Impacto");
+                    impacto.setIcon(new ImageIcon(path + "mina.png"));
+                    Defensa defensa = new Defensa("Impacto", 4, 5,0);
+                    defensa.setLabel(impacto);
+                    impacto.setName("Impacto" + contadorImpacto);
+                    ThreadPersonaje tp = new ThreadPersonaje(defensa,this);
+                    defensas.add(tp);
+                    defensasAtacar.add(defensa);
+                    pnlPrincipal.add(impacto);
+                    impacto.setSize(40,40);
+                    impacto.setLocation(x*40, y*40);  
+                    tableroJuego.setValorEnCoordenadas(x, y, 2);
+                    actualizarEspacios(espaciosDefensa.get(tipo));
+                    posicionDefensas.put(new Point(x,y), defensa);
+                } else if(tipo.equals("Multiple")){
+                    contadorMultiple += 1;
+                    JLabel multiple = new JLabel("Multiple");
+                    multiple.setIcon(new ImageIcon(path + "multiple.png"));
+                    Defensa defensa = new Defensa("Multiple", 5, 5,0);
+                    defensa.setLabel(multiple);
+                    multiple.setName("Multiple" + contadorMultiple);
+
+                    ThreadPersonaje tp = new ThreadPersonaje(defensa,this);
+                    defensas.add(tp);
+                    defensasAtacar.add(defensa);
+                    pnlPrincipal.add(multiple);
+                    multiple.setSize(40,40);
+                    multiple.setLocation(x*40, y*40);  
+                    tableroJuego.setValorEnCoordenadas(x, y, 2);
+                    actualizarEspacios(espaciosDefensa.get(tipo));
+                    posicionDefensas.put(new Point(x,y), defensa);
+                }
             }
+        } else{
+            System.out.println("Error");
         }
-        tableroJuego.setValorEnCoordenadas(x, y, 2);
-        System.out.println(x);
-        System.out.println(y);
+       
+    }
+    
+    private void actualizarEspacios(int espacios){
+        espaciosUtilizados += espacios;
+    }
+    
+    private void detenerThreads(){
+        for (int i = 0; i < zombies.size(); i++) {
+            zombies.get(i).stopThread();
+        }
+        for (int i = 0; i < defensas.size(); i++) {
+            defensas.get(i).stopThread();
+        }
+    }
+    
+    public void ataqueZombieMedio(int x, int y, int xDefensa, int yDefensa, Zombie zombie){
+        String path = "C:\\Users\\User\\Documents\\Universidad\\II Semestre 2023"
+                + "\\Introclases23II\\Arena202301\\src\\main\\java\\com\\mycompany\\arena202301\\img\\";
+        Point coordenadas = new Point(xDefensa,yDefensa);
+        Defensa defensa = posicionDefensas.get(coordenadas);
+        int distanciaX = Math.abs(x - xDefensa);
+        int distanciaY = Math.abs(y-yDefensa);
+        int horizontal = 0;
+        int vertical = 0;
+        
+        if (distanciaX <= 3 && distanciaY <= 3){
+            if (xDefensa - x > 0){
+                horizontal = 1;
+            } else{
+               horizontal = -1;
+            }
+            if (yDefensa - y > 0){
+                vertical = 1;
+            }       
+            else{
+                vertical = -1;
+            }
+            Bala bala = new Bala(path,x*40, y*40, vertical, horizontal);
+            pnlPrincipal.add(bala);
+            pnlPrincipal.setComponentZOrder(bala, 0);
+            pnlPrincipal.revalidate();
+            pnlPrincipal.repaint();
+            
+            Timer timer = new Timer(100, e -> {
+                bala.mover();
+                pnlPrincipal.repaint();
+                if (bala.getX() == xDefensa && bala.getY() == yDefensa) {
+                    pnlPrincipal.remove(bala);
+                    pnlPrincipal.revalidate();
+                    pnlPrincipal.repaint();
+                    ataqueZombieMedio(x, y, xDefensa, yDefensa, zombie);
+                }   
+            });
+            timer.setRepeats(true);
+            timer.start();
+            
+            
+        }
+    }
+   
+    public void atacarDefensa(int x, int y, Zombie zombie){
+        String path = "C:\\Users\\User\\Documents\\Universidad\\II Semestre 2023"
+                + "\\Introclases23II\\Arena202301\\src\\main\\java\\com\\mycompany\\arena202301\\img\\";
+        Point coordenadas = new Point(x,y);
+        Defensa defensa = posicionDefensas.get(coordenadas);
+        if (zombie.getNombre().equals("Contacto")){
+            JLabel labelGolpe = new labelGolpes(path + "hitZombie.png", x*40, y*40);
+            pnlPrincipal.add(labelGolpe);
+            pnlPrincipal.setComponentZOrder(labelGolpe, 0);
+            pnlPrincipal.revalidate();
+            pnlPrincipal.repaint();
+            defensa.setVida(defensa.getVida()-zombie.getDaño());
+            Timer timer = new Timer(500, e -> {
+                pnlPrincipal.remove(labelGolpe);
+                pnlPrincipal.revalidate();
+                pnlPrincipal.repaint();
+            });
+            timer.setRepeats(false);
+            timer.start();
+            infoFinal += "Zombie tipo: " + zombie.getLabel().getName() + " atacó a: " 
+                        + defensa.getLabel().getName() + "\n";
+        }else if(zombie.getNombre().equals("medioalcance")){
+            JLabel labelGolpe = new labelGolpes(path + "hitZombie.png", x*40, y*40);
+            pnlPrincipal.add(labelGolpe);
+            pnlPrincipal.setComponentZOrder(labelGolpe, 0);
+            pnlPrincipal.revalidate();
+            pnlPrincipal.repaint();
+            defensa.setVida(defensa.getVida()-zombie.getDaño());
+            Timer timer = new Timer(500, e -> {
+                pnlPrincipal.remove(labelGolpe);
+                pnlPrincipal.revalidate();
+                pnlPrincipal.repaint();
+            });
+            timer.setRepeats(false);
+            timer.start();
+            infoFinal += "Zombie tipo: " + zombie.getLabel().getName() + " atacó a: " 
+                        + defensa.getLabel().getName() + "\n";
+        }else if(zombie.getNombre().equals("Volador")){
+            JLabel labelGolpe = new labelGolpes(path + "hitZombie.png", x*40, y*40);
+            pnlPrincipal.add(labelGolpe);
+            pnlPrincipal.setComponentZOrder(labelGolpe, 0);
+            pnlPrincipal.revalidate();
+            pnlPrincipal.repaint();
+            defensa.setVida(defensa.getVida()-zombie.getDaño());
+            Timer timer = new Timer(500, e -> {
+                pnlPrincipal.remove(labelGolpe);
+                pnlPrincipal.revalidate();
+                pnlPrincipal.repaint();
+            });
+            timer.setRepeats(false);
+            timer.start();
+            infoFinal += "Zombie tipo: " + zombie.getLabel().getName() + " atacó a: " 
+                        + defensa.getLabel().getName() + "\n";
+        } else if(zombie.getNombre().equals("Choque")){
+            JLabel labelGolpe = new labelGolpes(path + "hitZombie.png", x*40, y*40);
+            pnlPrincipal.add(labelGolpe);
+            pnlPrincipal.setComponentZOrder(labelGolpe, 0);
+            pnlPrincipal.revalidate();
+            pnlPrincipal.repaint();
+            defensa.setVida(defensa.getVida()-zombie.getDaño());
+            Timer timer = new Timer(500, e -> {
+                pnlPrincipal.remove(labelGolpe);
+                pnlPrincipal.revalidate();
+                pnlPrincipal.repaint();
+            });
+            timer.setRepeats(false);
+            timer.start();
+            infoFinal += "Zombie tipo: " + zombie.getLabel().getName() + " atacó a: " 
+                        + defensa.getNombre() + "\n";
+        }
+        zombie.setGolpes(zombie.getGolpes()+1);
+        if (defensa.getVida()<= 0){
+            JLabel label = defensa.getLabel();
+            pnlPrincipal.remove(label);
+            tableroJuego.setValorEnCoordenadas(x, y, 0);
+            defensas.remove(defensa);
+            pnlPrincipal.revalidate();
+            pnlPrincipal.repaint();
+            infoFinal += "Zombie tipo: " + zombie.getLabel().getName() + " mató a: " 
+                        + defensa.getLabel().getName() + "\n";
+        }
+    }
+    
+    public void atacarFuente(int x, int y, Zombie zombie){
+        String path = "C:\\Users\\User\\Documents\\Universidad\\II Semestre 2023"
+                + "\\Introclases23II\\Arena202301\\src\\main\\java\\com\\mycompany\\arena202301\\img\\";
+        if (fuente.getVida()<= 0){
+            infoFinal += "Zombie tipo: " + zombie.getLabel().getName() + " destruyó la fuente"+ "\n";
+            tableroJuego.setValorEnCoordenadas(x, y, 0);
+            perdedor();
+        }
+        
+        fuente.setVida(fuente.getVida()-zombie.getDaño());
+        JLabel labelGolpe = new labelGolpes(path + "hitZombie.png", x*40, y*40);
+                pnlPrincipal.add(labelGolpe);
+                pnlPrincipal.setComponentZOrder(labelGolpe, 0);
+                pnlPrincipal.revalidate();
+                pnlPrincipal.repaint();
+                fuente.setVida(fuente.getVida()-zombie.getDaño());
+                Timer timer = new Timer(500, e -> {
+                    pnlPrincipal.remove(labelGolpe);
+                    pnlPrincipal.revalidate();
+                    pnlPrincipal.repaint();
+                });
+                timer.setRepeats(false);
+                timer.start();
+        zombie.setGolpes(zombie.getGolpes()+1);
+        infoFinal += "Zombie tipo: " + zombie.getLabel().getName() + " atacó la " 
+                        + "fuente" + "\n";
+    }
+    
+    private void perdedor(){
+        detenerThreads();
+        defensas.clear();
+        zombies.clear();
+        JLabel label = fuente.getLabel();
+        pnlPrincipal.remove(label);
+        pnlPrincipal.removeAll();
+        JTextArea texto = new JTextArea(50,50);
+        texto.setEditable(false);
+        texto.setText(infoFinal);
+        JScrollPane scrollPane = new JScrollPane(texto, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        JOptionPane.showMessageDialog(pnlPrincipal, scrollPane);
+        pnlPrincipal.revalidate();
+        pnlPrincipal.repaint();
+        perdedor = true;
         
     }
+    
+    /*public void getPosicionDefensa() throws InterruptedException {
+        for (int i = 0; i < defensas.size(); i++) {
+            Defensa defensa = (Defensa) defensasAtacar.get(i);
+            int xDefensa = defensa.getLabel().getY();
+            int yDefensa = defensa.getLabel().getX();
+            atacarZombie(xDefensa/40,yDefensa/40, defensa);
+        }
+        
+    }*/
+    
+    public void atacarZombie(JLabel label) throws InterruptedException {
+        String path = "C:\\Users\\User\\Documents\\Universidad\\II Semestre 2023"
+                + "\\Introclases23II\\Arena202301\\src\\main\\java\\com\\mycompany\\arena202301\\img\\";
+        int x = (label.getX()/40);
+        int y = (label.getY()/40);
+        
+        Point coordenadas = null;
+        Zombie zombie = null;
+        Defensa defensa = posicionDefensas.get(new Point(x,y));
+        
+        if (tableroJuego.getTablero()[x+1][y] == 1){ 
+            coordenadas = new Point(x+1,y);
+            zombie = posicionZombies.get(coordenadas);
+            if (defensa.getNombre().equals("Contacto")){
+                JLabel labelGolpe = new labelGolpes(path + "hitPlanta.png" , (x+1)*40, y*40);
+                pnlPrincipal.add(labelGolpe);
+                pnlPrincipal.setComponentZOrder(labelGolpe, 0);
+                pnlPrincipal.revalidate();
+                pnlPrincipal.repaint();
+                zombie.setVida(zombie.getVida()-defensa.getDaño());
+                Timer timer = new Timer(500, e -> {
+                    pnlPrincipal.remove(labelGolpe);
+                    pnlPrincipal.revalidate();
+                    pnlPrincipal.repaint();
+                });
+                timer.setRepeats(false);
+                timer.start();
+         
+            } else if (defensa.getNombre().equals("MedioAlcance")){
+                JLabel labelGolpe = new labelGolpes(path + "ataqueMedio.png" , (x+1)*40, y*40);
+                pnlPrincipal.add(labelGolpe);
+                pnlPrincipal.setComponentZOrder(labelGolpe, 0);
+                pnlPrincipal.revalidate();
+                pnlPrincipal.repaint();
+                zombie.setVida(zombie.getVida()-defensa.getDaño());
+                Timer timer = new Timer(500, e -> {
+                    pnlPrincipal.remove(labelGolpe);
+                    pnlPrincipal.revalidate();
+                    pnlPrincipal.repaint();
+                });
+                timer.setRepeats(false);
+                timer.start();
+            
+            }else if (defensa.getNombre().equals("Impacto") 
+                    || defensa.getNombre().equals("Multiple") ||defensa.getNombre().equals("Aereo")){
+                JLabel labelGolpe = new labelGolpes(path + "ataqueMultiple.png" , (x+1)*40, y*40);
+                pnlPrincipal.add(labelGolpe);
+                pnlPrincipal.setComponentZOrder(labelGolpe, 0);
+                pnlPrincipal.revalidate();
+                pnlPrincipal.repaint();
+                zombie.setVida(zombie.getVida()-defensa.getDaño());
+                Timer timer = new Timer(500, e -> {
+                    pnlPrincipal.remove(labelGolpe);
+                    pnlPrincipal.revalidate();
+                    pnlPrincipal.repaint();
+                });
+                timer.setRepeats(false);
+                timer.start();
+              
+            }
+        } else if(tableroJuego.getTablero()[x][y+1] == 1){ 
+            coordenadas = new Point(x,y+1);
+            zombie = posicionZombies.get(coordenadas);
+            if (defensa.getNombre().equals("Contacto")){
+                JLabel labelGolpe = new labelGolpes(path + "hitPlanta.png" , x*40, (y+1)*40);
+                pnlPrincipal.add(labelGolpe);
+                pnlPrincipal.setComponentZOrder(labelGolpe, 0);
+                pnlPrincipal.revalidate();
+                pnlPrincipal.repaint();
+                zombie.setVida(zombie.getVida()-defensa.getDaño());
+                Timer timer = new Timer(500, e -> {
+                    pnlPrincipal.remove(labelGolpe);
+                    pnlPrincipal.revalidate();
+                    pnlPrincipal.repaint();
+                });
+                timer.setRepeats(false);
+                timer.start();
+      
+            } else if (defensa.getNombre().equals("MedioAlcance")){
+                JLabel labelGolpe = new labelGolpes(path + "ataqueMedio.png" , x*40, (y+1)*40);
+                pnlPrincipal.add(labelGolpe);
+                pnlPrincipal.setComponentZOrder(labelGolpe, 0);
+                pnlPrincipal.revalidate();
+                pnlPrincipal.repaint();
+                zombie.setVida(zombie.getVida()-defensa.getDaño());
+                Timer timer = new Timer(500, e -> {
+                    pnlPrincipal.remove(labelGolpe);
+                    pnlPrincipal.revalidate();
+                    pnlPrincipal.repaint();
+                });
+                timer.setRepeats(false);
+                timer.start();
+
+            }else if (defensa.getNombre().equals("Impacto") 
+                    || defensa.getNombre().equals("Multiple") ||defensa.getNombre().equals("Aereo")){
+                JLabel labelGolpe = new labelGolpes(path + "ataqueMultiple.png" , x*40, (y+1)*40);
+                pnlPrincipal.add(labelGolpe);
+                pnlPrincipal.setComponentZOrder(labelGolpe, 0);
+                pnlPrincipal.revalidate();
+                pnlPrincipal.repaint();
+                zombie.setVida(zombie.getVida()-defensa.getDaño());
+                Timer timer = new Timer(500, e -> {
+                    pnlPrincipal.remove(labelGolpe);
+                    pnlPrincipal.revalidate();
+                    pnlPrincipal.repaint();
+                });
+                timer.setRepeats(false);
+                timer.start();
+      
+            }
+        } else if(tableroJuego.getTablero()[x-1][y] == 1){ 
+            coordenadas = new Point(x-1,y);
+            zombie = posicionZombies.get(coordenadas);
+            if (defensa.getNombre().equals("Contacto")){
+                JLabel labelGolpe = new labelGolpes(path + "hitPlanta.png" , (x-1)*40, y*40);
+                pnlPrincipal.add(labelGolpe);
+                pnlPrincipal.setComponentZOrder(labelGolpe, 0);
+                pnlPrincipal.revalidate();
+                pnlPrincipal.repaint();
+                zombie.setVida(zombie.getVida()-defensa.getDaño());
+                Timer timer = new Timer(500, e -> {
+                    pnlPrincipal.remove(labelGolpe);
+                    pnlPrincipal.revalidate();
+                    pnlPrincipal.repaint();
+                });
+                timer.setRepeats(false);
+                timer.start();
+       
+            } else if (defensa.getNombre().equals("MedioAlcance")){
+                JLabel labelGolpe = new labelGolpes(path + "ataqueMedio.png" , (x-1)*40, y*40);
+                pnlPrincipal.add(labelGolpe);
+                pnlPrincipal.setComponentZOrder(labelGolpe, 0);
+                pnlPrincipal.revalidate();
+                pnlPrincipal.repaint();
+                zombie.setVida(zombie.getVida()-defensa.getDaño());
+                Timer timer = new Timer(500, e -> {
+                    pnlPrincipal.remove(labelGolpe);
+                    pnlPrincipal.revalidate();
+                    pnlPrincipal.repaint();
+                });
+                timer.setRepeats(false);
+                timer.start();
+         
+            }else if (defensa.getNombre().equals("Impacto") 
+                    || defensa.getNombre().equals("Multiple") ||defensa.getNombre().equals("Aereo")){
+                JLabel labelGolpe = new labelGolpes(path + "ataqueMultiple.png" , (x-1)*40, y*40);
+                pnlPrincipal.add(labelGolpe);
+                pnlPrincipal.setComponentZOrder(labelGolpe, 0);
+                pnlPrincipal.revalidate();
+                pnlPrincipal.repaint();
+                zombie.setVida(zombie.getVida()-defensa.getDaño());
+                Timer timer = new Timer(500, e -> {
+                    pnlPrincipal.remove(labelGolpe);
+                    pnlPrincipal.revalidate();
+                    pnlPrincipal.repaint();
+                });
+                timer.setRepeats(false);
+                timer.start();
+       
+            }
+            
+        }else if(tableroJuego.getTablero()[x][y-1] == 1){ 
+            coordenadas = new Point(x,y-1);
+            zombie = posicionZombies.get(coordenadas);
+            if (defensa.getNombre().equals("Contacto")){
+                JLabel labelGolpe = new labelGolpes(path + "hitPlanta.png" , x*40, (y-1)*40);
+                pnlPrincipal.add(labelGolpe);
+                pnlPrincipal.setComponentZOrder(labelGolpe, 0);
+                pnlPrincipal.revalidate();
+                pnlPrincipal.repaint();
+                zombie.setVida(zombie.getVida()-defensa.getDaño());
+                Timer timer = new Timer(500, e -> {
+                    pnlPrincipal.remove(labelGolpe);
+                    pnlPrincipal.revalidate();
+                    pnlPrincipal.repaint();
+                });
+                timer.setRepeats(false);
+                timer.start();
+    
+            } else if (defensa.getNombre().equals("MedioAlcance")){
+                JLabel labelGolpe = new labelGolpes(path + "ataqueMedio.png" , x*40, (y-1)*40);
+                pnlPrincipal.add(labelGolpe);
+                pnlPrincipal.setComponentZOrder(labelGolpe, 0);
+                pnlPrincipal.revalidate();
+                pnlPrincipal.repaint();
+                zombie.setVida(zombie.getVida()-defensa.getDaño());
+                Timer timer = new Timer(500, e -> {
+                    pnlPrincipal.remove(labelGolpe);
+                    pnlPrincipal.revalidate();
+                    pnlPrincipal.repaint();
+                });
+                timer.setRepeats(false);
+                timer.start();
+
+            }else if (defensa.getNombre().equals("Impacto") 
+                    || defensa.getNombre().equals("Multiple") ||defensa.getNombre().equals("Aereo")){
+                JLabel labelGolpe = new labelGolpes(path + "ataqueMultiple.png" , x*40, (y-1)*40);
+                pnlPrincipal.add(labelGolpe);
+                pnlPrincipal.setComponentZOrder(labelGolpe, 0);
+                pnlPrincipal.revalidate();
+                pnlPrincipal.repaint();
+                zombie.setVida(zombie.getVida()-defensa.getDaño());
+                Timer timer = new Timer(500, e -> {
+                    pnlPrincipal.remove(labelGolpe);
+                    pnlPrincipal.revalidate();
+                    pnlPrincipal.repaint();
+                });
+                timer.setRepeats(false);
+                timer.start();
+          
+            }
+        }
+        
+
+    }
+    
+    
+    
+    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -413,24 +983,21 @@ public class Ventana extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        btnAgregar = new javax.swing.JButton();
         btnIniciar = new javax.swing.JButton();
-        txfX = new javax.swing.JTextField();
+        txtNombre = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
-        txfY = new javax.swing.JTextField();
+        nombreCargar = new javax.swing.JTextField();
         pnlPrincipal = new javax.swing.JPanel();
         ejercito = new javax.swing.JPanel();
+        CargarNombre = new javax.swing.JLabel();
+        errorNombre = new javax.swing.JPanel();
+        btnAgregar = new javax.swing.JButton();
+        guardarNombre = new javax.swing.JLabel();
+        reiniciar = new javax.swing.JButton();
+        siguienteNivel = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setPreferredSize(new java.awt.Dimension(1400, 1000));
-
-        btnAgregar.setText("Crear");
-        btnAgregar.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnAgregarActionPerformed(evt);
-            }
-        });
 
         btnIniciar.setText("Iniciar");
         btnIniciar.addActionListener(new java.awt.event.ActionListener() {
@@ -439,9 +1006,15 @@ public class Ventana extends javax.swing.JFrame {
             }
         });
 
+        txtNombre.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtNombreActionPerformed(evt);
+            }
+        });
+
         jLabel2.setText("Ejercito #1");
 
-        jButton1.setText("Colocar");
+        jButton1.setText("Cargar");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
@@ -473,41 +1046,102 @@ public class Ventana extends javax.swing.JFrame {
             .addGap(0, 240, Short.MAX_VALUE)
         );
 
+        CargarNombre.setText("Nombre:");
+
+        javax.swing.GroupLayout errorNombreLayout = new javax.swing.GroupLayout(errorNombre);
+        errorNombre.setLayout(errorNombreLayout);
+        errorNombreLayout.setHorizontalGroup(
+            errorNombreLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 215, Short.MAX_VALUE)
+        );
+        errorNombreLayout.setVerticalGroup(
+            errorNombreLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 52, Short.MAX_VALUE)
+        );
+
+        btnAgregar.setText("Guardar");
+        btnAgregar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAgregarActionPerformed(evt);
+            }
+        });
+
+        guardarNombre.setText("Nombre:");
+
+        reiniciar.setText("Reiniciar");
+        reiniciar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                reiniciarActionPerformed(evt);
+            }
+        });
+
+        siguienteNivel.setText("Siguiente Nivel");
+        siguienteNivel.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                siguienteNivelActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(pnlPrincipal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel2)
-                    .addComponent(txfY, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(txfX, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnAgregar)
-                    .addComponent(jButton1)
-                    .addComponent(btnIniciar)
-                    .addComponent(ejercito, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(ejercito, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jButton1, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                .addComponent(CargarNombre)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(nombreCargar, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(btnAgregar, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(btnIniciar, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                .addComponent(guardarNombre)
+                                .addGap(15, 15, 15)
+                                .addComponent(txtNombre, javax.swing.GroupLayout.PREFERRED_SIZE, 178, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(siguienteNivel, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                .addGap(18, 18, 18)
+                                .addComponent(reiniciar))))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGap(37, 37, 37)
+                        .addComponent(errorNombre, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(18, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap(201, Short.MAX_VALUE)
+                .addContainerGap()
                 .addComponent(btnIniciar)
-                .addGap(18, 18, 18)
+                .addGap(64, 64, 64)
                 .addComponent(jButton1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(CargarNombre)
+                    .addComponent(nombreCargar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(errorNombre, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnAgregar)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(txfX, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(txfY, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtNombre, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(guardarNombre))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 93, Short.MAX_VALUE)
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(ejercito, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(376, 376, 376))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(reiniciar)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(siguienteNivel)
+                .addGap(328, 328, 328))
             .addComponent(pnlPrincipal, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
@@ -515,29 +1149,106 @@ public class Ventana extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnIniciarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnIniciarActionPerformed
+        pnlPrincipal.removeMouseListener(pnlPrincipal.getMouseListeners()[0]);
+        pnlPrincipal.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (tipoDefensa != null) {
+                    int x = e.getX() / 40;
+                    int y = e.getY() / 40;
+                    colocarDefensa(tipoDefensa, x, y,cantEjercito+(nivel*5), espaciosUtilizados, nivel);
+                }
+            }
+        });
         for (int i = 0; i < zombies.size(); i++) {
             ThreadPersonaje get = zombies.get(i);
             get.start();
-            
-            
         }
-        
-        
-        
+        for (int i = 0; i < defensas.size(); i++) {
+            ThreadPersonaje get = defensas.get(i);
+            get.start();
+        }
         
     }//GEN-LAST:event_btnIniciarActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-            //crea el label
-            tableroJuego.imprimirTablero();
-            
+        if(nombreCargar.getText().isEmpty()){
+            nombreCargar.setText("Ponga su nombre");
+        } else{
+            if (nivel == -1){
+                nombreCargar.setText("No se encontro el nombre");
+            } else{
+                nivel = FileManager.leerInformacion(nombreCargar.getText());
+                pnlPrincipal.removeAll();  
+                pnlPrincipal.revalidate();
+                pnlPrincipal.repaint();
+                detenerThreads();
+                zombies.clear();
+                espaciosUtilizados = 0;
+                iniciarJuego(nivel);
+            }
+        }
+        /*nivel +=1;
+        pnlPrincipal.removeAll();  
+        pnlPrincipal.revalidate();
+        pnlPrincipal.repaint();
         
-           
+        detenerThreadsZombies();
+        zombies.clear();
+        iniciarJuego(nivel);
+        
+        System.out.println(nivel);
+        */   
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void btnAgregarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAgregarActionPerformed
-        // TODO add your handling code here:
+
+        if (txtNombre.getText().isEmpty()){
+            txtNombre.setText("Ponga su nombre");
+        } else{
+            if (FileManager.leerInformacion(txtNombre.getText()) == -1){
+                System.out.println(FileManager.leerInformacion(txtNombre.getText()));
+                FileManager.escribirInformacion(txtNombre.getText(), nivel);
+            } else{
+                txtNombre.setText("Ese nombre ya se ha guardado");
+            }
+            
+        }
+        
+        /*if (txtNombre.getText().isEmpty()){
+            txtNombre.setText("Ponga su nombre");
+        } else{
+            FileManager.escribirInformacion(txtNombre.getText(), nivel);
+            for (int i = 0; i < zombies.size(); i++) {
+                ThreadPersonaje get = zombies.get(i);
+                get.start();
+            }
+        }*/
     }//GEN-LAST:event_btnAgregarActionPerformed
+
+    private void txtNombreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtNombreActionPerformed
+   
+    }//GEN-LAST:event_txtNombreActionPerformed
+
+    private void reiniciarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reiniciarActionPerformed
+        if (perdedor == true){
+            detenerThreads();
+            zombies.clear();
+            defensas.clear();
+            iniciarJuego(nivel);
+            perdedor = false;
+        }
+    }//GEN-LAST:event_reiniciarActionPerformed
+
+    private void siguienteNivelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_siguienteNivelActionPerformed
+        if (perdedor == true){
+            nivel +=1;
+            zombies.clear();
+            defensas.clear();
+            iniciarJuego(nivel);
+            perdedor = false;
+        }
+    }//GEN-LAST:event_siguienteNivelActionPerformed
 
     /**
      * @param args the command line arguments
@@ -576,13 +1287,18 @@ public class Ventana extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel CargarNombre;
     private javax.swing.JButton btnAgregar;
     private javax.swing.JButton btnIniciar;
     private javax.swing.JPanel ejercito;
+    private javax.swing.JPanel errorNombre;
+    private javax.swing.JLabel guardarNombre;
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JTextField nombreCargar;
     private javax.swing.JPanel pnlPrincipal;
-    private javax.swing.JTextField txfX;
-    private javax.swing.JTextField txfY;
+    private javax.swing.JButton reiniciar;
+    private javax.swing.JButton siguienteNivel;
+    private javax.swing.JTextField txtNombre;
     // End of variables declaration//GEN-END:variables
 }

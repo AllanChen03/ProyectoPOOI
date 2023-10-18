@@ -22,20 +22,23 @@ public class ThreadPersonaje extends Thread{
     }
 
     @Override
-    public void run() {
-        
-        while(isRunning){
-            
-            try {
-                //determina x y y personaje.mover()
+public void run() {
+    while (isRunning) {
+        try {
+            if (personaje instanceof Zombie) {
                 refVentana.moverLabel(personaje.getLabel());
-                sleep(1000);
-            } catch (InterruptedException ex) {
-                
+            } else if (personaje instanceof Defensa) {
+                refVentana.atacarZombie(personaje.getLabel());
             }
-            
+            sleep(1000);
+        } catch (InterruptedException ex) {
+            // Manejar la excepción de interrupción
         }
-        
+    }
+}
+    
+    public void stopThread(){
+        isRunning = false;
     }
     
     

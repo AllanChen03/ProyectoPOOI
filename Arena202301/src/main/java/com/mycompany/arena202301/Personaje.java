@@ -4,7 +4,7 @@
  */
 package com.mycompany.arena202301;
 
-import java.awt.Color;
+
 import javax.swing.JLabel;
 
 /**
@@ -13,15 +13,18 @@ import javax.swing.JLabel;
  */
 public abstract class Personaje {
     String nombre;
-    Color color;
+    int espacios;
     int vida = 100;
-    int golpe;
+    int daño;
+    int golpes;
     JLabel label;
 
-    public Personaje(String nombre, Color color, int golpe) {
+    public Personaje(String nombre, int espacios, int daño, int golpes) {
         this.nombre = nombre;
-        this.color = color;
-        this.golpe = golpe;
+        this.espacios = espacios;
+        this.daño = daño;
+        this.golpes = golpes;
+
     }
     
     

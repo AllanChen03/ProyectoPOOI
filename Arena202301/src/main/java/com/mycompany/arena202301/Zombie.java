@@ -4,7 +4,7 @@
  */
 package com.mycompany.arena202301;
 
-import java.awt.Color;
+import javax.swing.JLabel;
 
 /**
  *
@@ -12,8 +12,41 @@ import java.awt.Color;
  */
 public class Zombie extends Personaje{
 
-    public Zombie(String nombre, Color color, int golpe) {
-        super(nombre, color, golpe);
+    public Zombie(String nombre, int espacios, int daño, int golpes) {
+        super(nombre, espacios, daño, golpes);
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+
+    public int getEspacios() {
+        return espacios;
+    }
+
+    public int getVida() {
+        return vida;
+    }
+
+    public void setVida(int vida) {
+        this.vida = vida;
+    }
+
+    public int getDaño() {
+        return daño;
+    }
+
+    public JLabel getLabel() {
+        return label;
+    }
+
+    public int getGolpes() {
+        return golpes;
+    }
+
+    public void setGolpes(int golpes) {
+        this.golpes = golpes;
     }
 
     

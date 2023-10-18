@@ -43,7 +43,7 @@ public class JLabelDragMouseAdapter implements MouseListener {
         System.out.println(dropPoint.x);
         System.out.println(dropPoint.y);
         SwingUtilities.convertPointToScreen(dropPoint, dragLabel);
-        //ventana.setEjercito(dragLabel, dropPoint.x, dropPoint.y);
+        /*ventana.setEjercito(dragLabel, dropPoint.x, dropPoint.y);*/
       
     }
     
