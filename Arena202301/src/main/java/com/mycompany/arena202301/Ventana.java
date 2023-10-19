@@ -192,11 +192,11 @@ public class Ventana extends javax.swing.JFrame {
         Random random = new Random();
         String path = "C:\\Users\\User\\Documents\\Universidad\\II Semestre 2023"
                 + "\\Introclases23II\\Arena202301\\src\\main\\java\\com\\mycompany\\arena202301\\img\\";
-        int porcentaje = (new Random()).nextInt(16);
         int contadorContacto = 0;
         int contadorMedio = 0;
         int contadorVolador = 0;
         int contadorChoque = 0;
+        int porcentaje = 5 +  (new Random()).nextInt(16);
         for (int i = 0; i < size; i++) {      
             String tipoZombie = tiposDeZombies[random.nextInt(tiposDeZombies.length)];
             if ("Contacto".equals(tipoZombie)){
@@ -205,6 +205,7 @@ public class Ventana extends javax.swing.JFrame {
                 label.setName(label.getText()+ contadorContacto);
                 label.setIcon(new ImageIcon(path + "zombie.png"));
                 Zombie zombie = new Zombie("Contacto", 1, 5+((nivel-1)*(porcentaje)/10),0);
+                zombie.setVida(100+((nivel-1)*(porcentaje)/10));
                 zombie.setLabel(label);
 
                 // Crear el thread
@@ -216,7 +217,7 @@ public class Ventana extends javax.swing.JFrame {
                 label.addMouseListener(new MouseAdapter() {
                     @Override
                     public void mouseClicked(MouseEvent e) {
-                        mostrarInformacion(zombie); 
+                        mostrarInformacionZombie(zombie); 
                     }
                 });
                 infoFinal += "Zombie tipo: " + zombie.getLabel().getName() + " Vida inicial: " 
@@ -226,6 +227,7 @@ public class Ventana extends javax.swing.JFrame {
                 JLabel label = new JLabel("Medioalcance");
                 label.setIcon(new ImageIcon(path + "medioalcance.png"));
                 Zombie zombie = new Zombie("Medioalcance",1, 2+((nivel-1)*(porcentaje)/10),0);
+                zombie.setVida(100+((nivel-1)*(porcentaje)/10));
                 zombie.setLabel(label);
                 label.setName(label.getText()+ contadorMedio);
 
@@ -239,7 +241,7 @@ public class Ventana extends javax.swing.JFrame {
                 label.addMouseListener(new MouseAdapter() {
                     @Override
                     public void mouseClicked(MouseEvent e) {
-                        mostrarInformacion(zombie); 
+                        mostrarInformacionZombie(zombie); 
                     }
                 });
                 infoFinal += "Zombie tipo: " + zombie.getLabel().getName() + " Vida inicial: " 
@@ -249,6 +251,7 @@ public class Ventana extends javax.swing.JFrame {
                 JLabel label = new JLabel("Volador");
                 label.setIcon(new ImageIcon(path + "volador.png"));
                 Zombie zombie = new Zombie("Volador", 1, 3+((nivel-1)*(porcentaje)/10),0);
+                zombie.setVida(100+((nivel-1)*(porcentaje)/10));
                 zombie.setLabel(label);
                 label.setName(label.getText()+ contadorVolador);
 
@@ -261,7 +264,7 @@ public class Ventana extends javax.swing.JFrame {
                 label.addMouseListener(new MouseAdapter() {
                     @Override
                     public void mouseClicked(MouseEvent e) {
-                        mostrarInformacion(zombie); 
+                        mostrarInformacionZombie(zombie); 
                     }
                 });
                 infoFinal += "Zombie tipo: " + zombie.getLabel().getName() + " Vida inicial: " 
@@ -271,6 +274,7 @@ public class Ventana extends javax.swing.JFrame {
                 JLabel label = new JLabel("Choque");
                 label.setIcon(new ImageIcon(path + "choque.png"));
                 Zombie zombie = new Zombie("Choque", 1, 10+((nivel-1)*(porcentaje/10)),0);
+                zombie.setVida(100+((nivel-1)*(porcentaje)/10));
                 zombie.setLabel(label);
                 label.setName(label.getText()+ contadorChoque);
 
@@ -284,7 +288,7 @@ public class Ventana extends javax.swing.JFrame {
                 label.addMouseListener(new MouseAdapter() {
                     @Override
                     public void mouseClicked(MouseEvent e) {
-                        mostrarInformacion(zombie); 
+                        mostrarInformacionZombie(zombie); 
                     }
                 });
                 infoFinal += "Zombie tipo: " + zombie.getLabel().getName() + " Vida inicial: " 
@@ -293,7 +297,7 @@ public class Ventana extends javax.swing.JFrame {
             
         }
     }
-    private void mostrarInformacion(Zombie zombie){
+    private void mostrarInformacionZombie(Zombie zombie){
         String informacion = "Zombie tipo: " + zombie.getNombre() + "\n" 
                 + "Vida: "+zombie.getVida() + "\n" + "Golpes: " + zombie.getGolpes() + " de: " 
                 + zombie.getDaño() + " de daño";
@@ -446,13 +450,15 @@ public class Ventana extends javax.swing.JFrame {
         int contadorImpacto = 0;
         int contadorMultiple = 0;
         int contadorAereo = 0;
+        int porcentaje = 5 + (new Random()).nextInt(16);
         if (espaciosUtilizados + espaciosDefensa.get(tipo) <= espaciosTotales){
             if(tableroJuego.getTablero()[x][y] == 0){
                 if (tipo.equals("Contacto")) {
                     contadorContacto += 1;
                     JLabel contacto = new JLabel("Contacto");
                     contacto.setIcon(new ImageIcon(path + "contactoP.png"));
-                    Defensa defensa = new Defensa("Contacto", 1, 5,0);
+                    Defensa defensa = new Defensa("Contacto", 1, 3+((nivel-1)*(porcentaje/10)),0);
+                    defensa.setVida(100+((nivel-1)*(porcentaje/10)));
                     defensa.setLabel(contacto);
                     contacto.setName("Contacto" + contadorContacto);
 
@@ -465,13 +471,22 @@ public class Ventana extends javax.swing.JFrame {
                     tableroJuego.setValorEnCoordenadas(x, y, 2);
                     actualizarEspacios(espaciosDefensa.get(tipo));
                     posicionDefensas.put(new Point(x,y), defensa);
+                    contacto.addMouseListener(new MouseAdapter() {
+                        @Override
+                        public void mouseClicked(MouseEvent e) {
+                            mostrarInformacionDefensas(defensa); 
+                        }
+                    });
+                    infoFinal += "Defensa tipo: " + defensa.getLabel().getName() + " Vida inicial: " 
+                        + defensa.getVida()  + " Poder de golpe: " + defensa.getDaño() + "\n";
 
 
                 } else if(tipo.equals("Aereo")){
                     contadorAereo +=1;
                     JLabel aereo = new JLabel("Aereo");
                     aereo.setIcon(new ImageIcon(path + "aereo.png"));
-                    Defensa defensa = new Defensa("Aereo", 3, 5,0);
+                    Defensa defensa = new Defensa("Aereo", 3, 5+((nivel-1)*(porcentaje/10)),0);
+                    defensa.setVida(100+((nivel-1)*(porcentaje/10)));
                     defensa.setLabel(aereo);
                     aereo.setName("Aereo" + contadorAereo);
 
@@ -484,11 +499,21 @@ public class Ventana extends javax.swing.JFrame {
                     tableroJuego.setValorEnCoordenadas(x, y, 2);
                     actualizarEspacios(espaciosDefensa.get(tipo));
                     posicionDefensas.put(new Point(x,y), defensa);
+                    
+                    aereo.addMouseListener(new MouseAdapter() {
+                        @Override
+                        public void mouseClicked(MouseEvent e) {
+                            mostrarInformacionDefensas(defensa); 
+                        }
+                    });
+                    infoFinal += "Defensa tipo: " + defensa.getLabel().getName() + " Vida inicial: " 
+                        + defensa.getVida()  + " Poder de golpe: " + defensa.getDaño() + "\n";
                 } else if(tipo.equals("MedioAlcance")){
                     contadorMedio +=1;
                     JLabel medioalcance = new JLabel("MedioAlcance");
                     medioalcance.setIcon(new ImageIcon(path + "medio2.png"));
-                    Defensa defensa = new Defensa("MedioAlcance", 2, 5,0);
+                    Defensa defensa = new Defensa("MedioAlcance", 2, 3+((nivel-1)*(porcentaje/10)),0);
+                    defensa.setVida(100+((nivel-1)*(porcentaje/10)));
                     defensa.setLabel(medioalcance);
                     medioalcance.setName("Medio Alcance" + contadorMedio);
 
@@ -501,10 +526,20 @@ public class Ventana extends javax.swing.JFrame {
                     tableroJuego.setValorEnCoordenadas(x, y, 2);
                     actualizarEspacios(espaciosDefensa.get(tipo));
                     posicionDefensas.put(new Point(x,y), defensa);
+                    
+                    medioalcance.addMouseListener(new MouseAdapter() {
+                        @Override
+                        public void mouseClicked(MouseEvent e) {
+                            mostrarInformacionDefensas(defensa); 
+                        }
+                    });
+                    infoFinal += "Defensa tipo: " + defensa.getLabel().getName() + " Vida inicial: " 
+                        + defensa.getVida()  + " Poder de golpe: " + defensa.getDaño() + "\n";
                 } else if(tipo.equals("Bloque")){
                     JLabel bloque = new JLabel("Bloque");
                     bloque.setIcon(new ImageIcon(path + "nuez.png"));
-                    Defensa defensa = new Defensa("Bloque", 1, 5,0);
+                    Defensa defensa = new Defensa("Bloque", 1, 0*((nivel-1)*(porcentaje/10)),0);
+                    defensa.setVida(150+((nivel-1)*(porcentaje/10)));
                     defensa.setLabel(bloque);
 
                     ThreadPersonaje tp = new ThreadPersonaje(defensa,this);
@@ -516,11 +551,21 @@ public class Ventana extends javax.swing.JFrame {
                     tableroJuego.setValorEnCoordenadas(x, y, 2);
                     actualizarEspacios(espaciosDefensa.get(tipo));
                     posicionDefensas.put(new Point(x,y), defensa);
+                    
+                    bloque.addMouseListener(new MouseAdapter() {
+                        @Override
+                        public void mouseClicked(MouseEvent e) {
+                            mostrarInformacionDefensas(defensa); 
+                        }
+                    });
+                    infoFinal += "Defensa tipo: " + defensa.getLabel().getName() + " Vida inicial: " 
+                        + defensa.getVida()  + " Poder de golpe: " + defensa.getDaño() + "\n";
                 } else if(tipo.equals("Impacto")){
                     contadorImpacto+=1;
                     JLabel impacto = new JLabel("Impacto");
                     impacto.setIcon(new ImageIcon(path + "mina.png"));
-                    Defensa defensa = new Defensa("Impacto", 4, 5,0);
+                    Defensa defensa = new Defensa("Impacto", 4, 7+((nivel-1)*(porcentaje/10)),0);
+                    defensa.setVida(100+((nivel-1)*(porcentaje/10)));
                     defensa.setLabel(impacto);
                     impacto.setName("Impacto" + contadorImpacto);
                     ThreadPersonaje tp = new ThreadPersonaje(defensa,this);
@@ -532,11 +577,20 @@ public class Ventana extends javax.swing.JFrame {
                     tableroJuego.setValorEnCoordenadas(x, y, 2);
                     actualizarEspacios(espaciosDefensa.get(tipo));
                     posicionDefensas.put(new Point(x,y), defensa);
+                    impacto.addMouseListener(new MouseAdapter() {
+                        @Override
+                        public void mouseClicked(MouseEvent e) {
+                            mostrarInformacionDefensas(defensa); 
+                        }
+                    });
+                    infoFinal += "Defensa tipo: " + defensa.getLabel().getName() + " Vida inicial: " 
+                        + defensa.getVida()  + " Poder de golpe: " + defensa.getDaño() + "\n";
                 } else if(tipo.equals("Multiple")){
                     contadorMultiple += 1;
                     JLabel multiple = new JLabel("Multiple");
                     multiple.setIcon(new ImageIcon(path + "multiple.png"));
-                    Defensa defensa = new Defensa("Multiple", 5, 5,0);
+                    Defensa defensa = new Defensa("Multiple", 5, 10+((nivel-1)*(porcentaje/10)),0);
+                    defensa.setVida(100+((nivel-1)*(porcentaje/10)));
                     defensa.setLabel(multiple);
                     multiple.setName("Multiple" + contadorMultiple);
 
@@ -549,12 +603,27 @@ public class Ventana extends javax.swing.JFrame {
                     tableroJuego.setValorEnCoordenadas(x, y, 2);
                     actualizarEspacios(espaciosDefensa.get(tipo));
                     posicionDefensas.put(new Point(x,y), defensa);
+                    
+                    multiple.addMouseListener(new MouseAdapter() {
+                        @Override
+                        public void mouseClicked(MouseEvent e) {
+                            mostrarInformacionDefensas(defensa); 
+                        }
+                    });
+                    infoFinal += "Defensa tipo: " + defensa.getLabel().getName() + " Vida inicial: " 
+                        + defensa.getVida()  + " Poder de golpe: " + defensa.getDaño() + "\n";
                 }
             }
         } else{
             System.out.println("Error");
         }
        
+    }
+    public void mostrarInformacionDefensas(Defensa defensa){
+        String informacion = "Defensa tipo: " + defensa.getNombre() + "\n" 
+                + "Vida: "+defensa.getVida() + "\n" + "Golpes: " + defensa.getGolpes() + " de: " 
+                + defensa.getDaño() + " de daño";
+        JOptionPane.showMessageDialog(pnlPrincipal, informacion);
     }
     
     private void actualizarEspacios(int espacios){
@@ -620,71 +689,93 @@ public class Ventana extends javax.swing.JFrame {
                 + "\\Introclases23II\\Arena202301\\src\\main\\java\\com\\mycompany\\arena202301\\img\\";
         Point coordenadas = new Point(x,y);
         Defensa defensa = posicionDefensas.get(coordenadas);
-        if (zombie.getNombre().equals("Contacto")){
-            JLabel labelGolpe = new labelGolpes(path + "hitZombie.png", x*40, y*40);
-            pnlPrincipal.add(labelGolpe);
-            pnlPrincipal.setComponentZOrder(labelGolpe, 0);
-            pnlPrincipal.revalidate();
-            pnlPrincipal.repaint();
-            defensa.setVida(defensa.getVida()-zombie.getDaño());
-            Timer timer = new Timer(500, e -> {
-                pnlPrincipal.remove(labelGolpe);
+        if(defensa.getNombre().equals("Aereo")){
+            if(zombie.getNombre().equals("Volador")){
+                JLabel labelGolpe = new labelGolpes(path + "hitZombie.png", x*40, y*40);
+                pnlPrincipal.add(labelGolpe);
+                pnlPrincipal.setComponentZOrder(labelGolpe, 0);
                 pnlPrincipal.revalidate();
                 pnlPrincipal.repaint();
-            });
-            timer.setRepeats(false);
-            timer.start();
-            infoFinal += "Zombie tipo: " + zombie.getLabel().getName() + " atacó a: " 
-                        + defensa.getLabel().getName() + "\n";
-        }else if(zombie.getNombre().equals("medioalcance")){
-            JLabel labelGolpe = new labelGolpes(path + "hitZombie.png", x*40, y*40);
-            pnlPrincipal.add(labelGolpe);
-            pnlPrincipal.setComponentZOrder(labelGolpe, 0);
-            pnlPrincipal.revalidate();
-            pnlPrincipal.repaint();
-            defensa.setVida(defensa.getVida()-zombie.getDaño());
-            Timer timer = new Timer(500, e -> {
-                pnlPrincipal.remove(labelGolpe);
+                defensa.setVida(defensa.getVida()-zombie.getDaño());
+                Timer timer = new Timer(800, e -> {
+                    pnlPrincipal.remove(labelGolpe);
+                    pnlPrincipal.revalidate();
+                    pnlPrincipal.repaint();
+                });
+                timer.setRepeats(false);
+                timer.start();
+                infoFinal += "Zombie tipo: " + zombie.getLabel().getName() + " atacó a: " 
+                            + defensa.getLabel().getName() + "\n";
+            }
+        }else{
+            if (zombie.getNombre().equals("Contacto")){
+                JLabel labelGolpe = new labelGolpes(path + "hitZombie.png", x*40, y*40);
+                pnlPrincipal.add(labelGolpe);
+                pnlPrincipal.setComponentZOrder(labelGolpe, 0);
                 pnlPrincipal.revalidate();
                 pnlPrincipal.repaint();
-            });
-            timer.setRepeats(false);
-            timer.start();
-            infoFinal += "Zombie tipo: " + zombie.getLabel().getName() + " atacó a: " 
-                        + defensa.getLabel().getName() + "\n";
-        }else if(zombie.getNombre().equals("Volador")){
-            JLabel labelGolpe = new labelGolpes(path + "hitZombie.png", x*40, y*40);
-            pnlPrincipal.add(labelGolpe);
-            pnlPrincipal.setComponentZOrder(labelGolpe, 0);
-            pnlPrincipal.revalidate();
-            pnlPrincipal.repaint();
-            defensa.setVida(defensa.getVida()-zombie.getDaño());
-            Timer timer = new Timer(500, e -> {
-                pnlPrincipal.remove(labelGolpe);
+                defensa.setVida(defensa.getVida()-zombie.getDaño());
+                Timer timer = new Timer(800, e -> {
+                    pnlPrincipal.remove(labelGolpe);
+                    pnlPrincipal.revalidate();
+                    pnlPrincipal.repaint();
+                });
+                timer.setRepeats(false);
+                timer.start();
+                infoFinal += "Zombie tipo: " + zombie.getLabel().getName() + " atacó a: " 
+                            + defensa.getLabel().getName() + "\n";
+            }else if(zombie.getNombre().equals("medioalcance")){
+                JLabel labelGolpe = new labelGolpes(path + "bala.png", x*40, y*40);
+                pnlPrincipal.add(labelGolpe);
+                pnlPrincipal.setComponentZOrder(labelGolpe, 0);
                 pnlPrincipal.revalidate();
                 pnlPrincipal.repaint();
-            });
-            timer.setRepeats(false);
-            timer.start();
-            infoFinal += "Zombie tipo: " + zombie.getLabel().getName() + " atacó a: " 
-                        + defensa.getLabel().getName() + "\n";
-        } else if(zombie.getNombre().equals("Choque")){
-            JLabel labelGolpe = new labelGolpes(path + "hitZombie.png", x*40, y*40);
-            pnlPrincipal.add(labelGolpe);
-            pnlPrincipal.setComponentZOrder(labelGolpe, 0);
-            pnlPrincipal.revalidate();
-            pnlPrincipal.repaint();
-            defensa.setVida(defensa.getVida()-zombie.getDaño());
-            Timer timer = new Timer(500, e -> {
-                pnlPrincipal.remove(labelGolpe);
+                defensa.setVida(defensa.getVida()-zombie.getDaño());
+                Timer timer = new Timer(800, e -> {
+                    pnlPrincipal.remove(labelGolpe);
+                    pnlPrincipal.revalidate();
+                    pnlPrincipal.repaint();
+                });
+                timer.setRepeats(false);
+                timer.start();
+                infoFinal += "Zombie tipo: " + zombie.getLabel().getName() + " atacó a: " 
+                            + defensa.getLabel().getName() + "\n";
+            }else if(zombie.getNombre().equals("Volador")){
+                JLabel labelGolpe = new labelGolpes(path + "hitZombie.png", x*40, y*40);
+                pnlPrincipal.add(labelGolpe);
+                pnlPrincipal.setComponentZOrder(labelGolpe, 0);
                 pnlPrincipal.revalidate();
                 pnlPrincipal.repaint();
-            });
-            timer.setRepeats(false);
-            timer.start();
-            infoFinal += "Zombie tipo: " + zombie.getLabel().getName() + " atacó a: " 
-                        + defensa.getNombre() + "\n";
+                defensa.setVida(defensa.getVida()-zombie.getDaño());
+                Timer timer = new Timer(800, e -> {
+                    pnlPrincipal.remove(labelGolpe);
+                    pnlPrincipal.revalidate();
+                    pnlPrincipal.repaint();
+                });
+                timer.setRepeats(false);
+                timer.start();
+                infoFinal += "Zombie tipo: " + zombie.getLabel().getName() + " atacó a: " 
+                            + defensa.getLabel().getName() + "\n";
+            } else if(zombie.getNombre().equals("Choque")){
+                JLabel labelGolpe = new labelGolpes(path + "hitZombie.png", x*40, y*40);
+                pnlPrincipal.add(labelGolpe);
+                pnlPrincipal.setComponentZOrder(labelGolpe, 0);
+                pnlPrincipal.revalidate();
+                pnlPrincipal.repaint();
+                defensa.setVida(defensa.getVida()-zombie.getDaño());
+                Timer timer = new Timer(800, e -> {
+                    pnlPrincipal.remove(labelGolpe);
+                    pnlPrincipal.revalidate();
+                    pnlPrincipal.repaint();
+                });
+                timer.setRepeats(false);
+                timer.start();
+                infoFinal += "Zombie tipo: " + zombie.getLabel().getName() + " atacó a: " 
+                            + defensa.getNombre() + "\n";
+            }
+            
         }
+        
         zombie.setGolpes(zombie.getGolpes()+1);
         if (defensa.getVida()<= 0){
             JLabel label = defensa.getLabel();
@@ -767,207 +858,363 @@ public class Ventana extends javax.swing.JFrame {
         if (tableroJuego.getTablero()[x+1][y] == 1){ 
             coordenadas = new Point(x+1,y);
             zombie = posicionZombies.get(coordenadas);
-            if (defensa.getNombre().equals("Contacto")){
-                JLabel labelGolpe = new labelGolpes(path + "hitPlanta.png" , (x+1)*40, y*40);
-                pnlPrincipal.add(labelGolpe);
-                pnlPrincipal.setComponentZOrder(labelGolpe, 0);
-                pnlPrincipal.revalidate();
-                pnlPrincipal.repaint();
-                zombie.setVida(zombie.getVida()-defensa.getDaño());
-                Timer timer = new Timer(500, e -> {
-                    pnlPrincipal.remove(labelGolpe);
+            if (zombie.getNombre().equals("Volador")){
+                if(defensa.getNombre().equals("Aereo")){
+                    JLabel labelGolpe = new labelGolpes(path + "ataqueMultiple.png" , (x+1)*40, y*40);
+                    pnlPrincipal.add(labelGolpe);
+                    pnlPrincipal.setComponentZOrder(labelGolpe, 0);
                     pnlPrincipal.revalidate();
                     pnlPrincipal.repaint();
-                });
-                timer.setRepeats(false);
-                timer.start();
-         
-            } else if (defensa.getNombre().equals("MedioAlcance")){
-                JLabel labelGolpe = new labelGolpes(path + "ataqueMedio.png" , (x+1)*40, y*40);
-                pnlPrincipal.add(labelGolpe);
-                pnlPrincipal.setComponentZOrder(labelGolpe, 0);
-                pnlPrincipal.revalidate();
-                pnlPrincipal.repaint();
-                zombie.setVida(zombie.getVida()-defensa.getDaño());
-                Timer timer = new Timer(500, e -> {
-                    pnlPrincipal.remove(labelGolpe);
+                    zombie.setVida(zombie.getVida()-defensa.getDaño());
+                    muerteZombie(zombie, defensa, x+1, y);
+                    Timer timer = new Timer(500, e -> {
+                        pnlPrincipal.remove(labelGolpe);
+                        pnlPrincipal.revalidate();
+                        pnlPrincipal.repaint();
+                    });
+                    timer.setRepeats(false);
+                    timer.start();
+                    defensa.setGolpes(zombie.getGolpes()+1);
+                    infoFinal += "Defensa tipo: " + defensa.getLabel().getName() + " atacó a: " 
+                            + zombie.getLabel().getName() + "\n";
+                }
+                
+            }else{
+                if (defensa.getNombre().equals("Contacto")){
+                    JLabel labelGolpe = new labelGolpes(path + "hitPlanta.png" , (x+1)*40, y*40);
+                    pnlPrincipal.add(labelGolpe);
+                    pnlPrincipal.setComponentZOrder(labelGolpe, 0);
                     pnlPrincipal.revalidate();
                     pnlPrincipal.repaint();
-                });
-                timer.setRepeats(false);
-                timer.start();
-            
-            }else if (defensa.getNombre().equals("Impacto") 
-                    || defensa.getNombre().equals("Multiple") ||defensa.getNombre().equals("Aereo")){
-                JLabel labelGolpe = new labelGolpes(path + "ataqueMultiple.png" , (x+1)*40, y*40);
-                pnlPrincipal.add(labelGolpe);
-                pnlPrincipal.setComponentZOrder(labelGolpe, 0);
-                pnlPrincipal.revalidate();
-                pnlPrincipal.repaint();
-                zombie.setVida(zombie.getVida()-defensa.getDaño());
-                Timer timer = new Timer(500, e -> {
-                    pnlPrincipal.remove(labelGolpe);
+                    zombie.setVida(zombie.getVida()-defensa.getDaño());
+                    muerteZombie(zombie, defensa, x+1, y);
+                    Timer timer = new Timer(500, e -> {
+                        pnlPrincipal.remove(labelGolpe);
+                        pnlPrincipal.revalidate();
+                        pnlPrincipal.repaint();
+                    });
+                    timer.setRepeats(false);
+                    timer.start();
+                    defensa.setGolpes(zombie.getGolpes()+1);
+                    infoFinal += "Defensa tipo: " + defensa.getLabel().getName() + " atacó a: " 
+                            + zombie.getLabel().getName() + "\n";
+
+                } else if (defensa.getNombre().equals("MedioAlcance")){
+                    JLabel labelGolpe = new labelGolpes(path + "ataqueMedio.png" , (x+1)*40, y*40);
+                    pnlPrincipal.add(labelGolpe);
+                    pnlPrincipal.setComponentZOrder(labelGolpe, 0);
                     pnlPrincipal.revalidate();
                     pnlPrincipal.repaint();
-                });
-                timer.setRepeats(false);
-                timer.start();
-              
+                    zombie.setVida(zombie.getVida()-defensa.getDaño());
+                    muerteZombie(zombie, defensa, x+1, y);
+                    Timer timer = new Timer(500, e -> {
+                        pnlPrincipal.remove(labelGolpe);
+                        pnlPrincipal.revalidate();
+                        pnlPrincipal.repaint();
+                    });
+                    timer.setRepeats(false);
+                    timer.start();
+                    defensa.setGolpes(zombie.getGolpes()+1);
+                    infoFinal += "Defensa tipo: " + defensa.getLabel().getName() + " atacó a: " 
+                            + zombie.getLabel().getName() + "\n";
+
+                }else if (defensa.getNombre().equals("Impacto") 
+                        || defensa.getNombre().equals("Multiple") ||defensa.getNombre().equals("Aereo")){
+                    JLabel labelGolpe = new labelGolpes(path + "ataqueMultiple.png" , (x+1)*40, y*40);
+                    pnlPrincipal.add(labelGolpe);
+                    pnlPrincipal.setComponentZOrder(labelGolpe, 0);
+                    pnlPrincipal.revalidate();
+                    pnlPrincipal.repaint();
+                    zombie.setVida(zombie.getVida()-defensa.getDaño());
+                    muerteZombie(zombie, defensa, x+1, y);
+                    Timer timer = new Timer(500, e -> {
+                        pnlPrincipal.remove(labelGolpe);
+                        pnlPrincipal.revalidate();
+                        pnlPrincipal.repaint();
+                    });
+                    timer.setRepeats(false);
+                    timer.start();
+                    defensa.setGolpes(zombie.getGolpes()+1);
+                    infoFinal += "Defensa tipo: " + defensa.getLabel().getName() + " atacó a: " 
+                            + zombie.getLabel().getName() + "\n";
+
+                }
             }
-        } else if(tableroJuego.getTablero()[x][y+1] == 1){ 
+           
+        }else if(tableroJuego.getTablero()[x][y+1] == 1){ 
             coordenadas = new Point(x,y+1);
             zombie = posicionZombies.get(coordenadas);
-            if (defensa.getNombre().equals("Contacto")){
-                JLabel labelGolpe = new labelGolpes(path + "hitPlanta.png" , x*40, (y+1)*40);
-                pnlPrincipal.add(labelGolpe);
-                pnlPrincipal.setComponentZOrder(labelGolpe, 0);
-                pnlPrincipal.revalidate();
-                pnlPrincipal.repaint();
-                zombie.setVida(zombie.getVida()-defensa.getDaño());
-                Timer timer = new Timer(500, e -> {
-                    pnlPrincipal.remove(labelGolpe);
+            if (zombie.getNombre().equals("Volador")){
+                if(defensa.getNombre().equals("Aereo")){
+                    JLabel labelGolpe = new labelGolpes(path + "ataqueMultiple.png" , x*40, (y+1)*40);
+                    pnlPrincipal.add(labelGolpe);
+                    pnlPrincipal.setComponentZOrder(labelGolpe, 0);
                     pnlPrincipal.revalidate();
                     pnlPrincipal.repaint();
-                });
-                timer.setRepeats(false);
-                timer.start();
+                    zombie.setVida(zombie.getVida()-defensa.getDaño());
+                    muerteZombie(zombie, defensa, x, y+1);
+                    Timer timer = new Timer(500, e -> {
+                        pnlPrincipal.remove(labelGolpe);
+                        pnlPrincipal.revalidate();
+                        pnlPrincipal.repaint();
+                    });
+                    timer.setRepeats(false);
+                    timer.start();
+                    defensa.setGolpes(zombie.getGolpes()+1);
+                    infoFinal += "Defensa tipo: " + defensa.getLabel().getName() + " atacó a: " 
+                            + zombie.getLabel().getName() + "\n";
+                    
+                }
+                
+            }else{
+                if (defensa.getNombre().equals("Contacto")){
+                    JLabel labelGolpe = new labelGolpes(path + "hitPlanta.png" , x*40, (y+1)*40);
+                    pnlPrincipal.add(labelGolpe);
+                    pnlPrincipal.setComponentZOrder(labelGolpe, 0);
+                    pnlPrincipal.revalidate();
+                    pnlPrincipal.repaint();
+                    zombie.setVida(zombie.getVida()-defensa.getDaño());
+                    muerteZombie(zombie, defensa, x, y+1);
+                    Timer timer = new Timer(500, e -> {
+                        pnlPrincipal.remove(labelGolpe);
+                        pnlPrincipal.revalidate();
+                        pnlPrincipal.repaint();
+                    });
+                    timer.setRepeats(false);
+                    timer.start();
+                    defensa.setGolpes(zombie.getGolpes()+1);
+                    infoFinal += "Defensa tipo: " + defensa.getLabel().getName() + " atacó a: " 
+                            + zombie.getLabel().getName() + "\n";
       
-            } else if (defensa.getNombre().equals("MedioAlcance")){
-                JLabel labelGolpe = new labelGolpes(path + "ataqueMedio.png" , x*40, (y+1)*40);
-                pnlPrincipal.add(labelGolpe);
-                pnlPrincipal.setComponentZOrder(labelGolpe, 0);
-                pnlPrincipal.revalidate();
-                pnlPrincipal.repaint();
-                zombie.setVida(zombie.getVida()-defensa.getDaño());
-                Timer timer = new Timer(500, e -> {
-                    pnlPrincipal.remove(labelGolpe);
+                } else if (defensa.getNombre().equals("MedioAlcance")){
+                    JLabel labelGolpe = new labelGolpes(path + "ataqueMedio.png" , x*40, (y+1)*40);
+                    pnlPrincipal.add(labelGolpe);
+                    pnlPrincipal.setComponentZOrder(labelGolpe, 0);
                     pnlPrincipal.revalidate();
                     pnlPrincipal.repaint();
-                });
-                timer.setRepeats(false);
-                timer.start();
+                    zombie.setVida(zombie.getVida()-defensa.getDaño());
+                    muerteZombie(zombie, defensa, x, y+1);
+                    Timer timer = new Timer(500, e -> {
+                        pnlPrincipal.remove(labelGolpe);
+                        pnlPrincipal.revalidate();
+                        pnlPrincipal.repaint();
+                    });
+                    timer.setRepeats(false);
+                    timer.start();
+                    defensa.setGolpes(zombie.getGolpes()+1);
+                    infoFinal += "Defensa tipo: " + defensa.getLabel().getName() + " atacó a: " 
+                            + zombie.getLabel().getName() + "\n";
 
-            }else if (defensa.getNombre().equals("Impacto") 
-                    || defensa.getNombre().equals("Multiple") ||defensa.getNombre().equals("Aereo")){
-                JLabel labelGolpe = new labelGolpes(path + "ataqueMultiple.png" , x*40, (y+1)*40);
-                pnlPrincipal.add(labelGolpe);
-                pnlPrincipal.setComponentZOrder(labelGolpe, 0);
-                pnlPrincipal.revalidate();
-                pnlPrincipal.repaint();
-                zombie.setVida(zombie.getVida()-defensa.getDaño());
-                Timer timer = new Timer(500, e -> {
-                    pnlPrincipal.remove(labelGolpe);
+                }else if (defensa.getNombre().equals("Impacto") 
+                        || defensa.getNombre().equals("Multiple") ||defensa.getNombre().equals("Aereo")){
+                    JLabel labelGolpe = new labelGolpes(path + "ataqueMultiple.png" , x*40, (y+1)*40);
+                    pnlPrincipal.add(labelGolpe);
+                    pnlPrincipal.setComponentZOrder(labelGolpe, 0);
                     pnlPrincipal.revalidate();
                     pnlPrincipal.repaint();
-                });
-                timer.setRepeats(false);
-                timer.start();
-      
+                    zombie.setVida(zombie.getVida()-defensa.getDaño());
+                    muerteZombie(zombie, defensa, x, y+1);
+                    Timer timer = new Timer(500, e -> {
+                        pnlPrincipal.remove(labelGolpe);
+                        pnlPrincipal.revalidate();
+                        pnlPrincipal.repaint();
+                    });
+                    timer.setRepeats(false);
+                    timer.start();
+                    defensa.setGolpes(zombie.getGolpes()+1);
+                    infoFinal += "Defensa tipo: " + defensa.getLabel().getName() + " atacó a: " 
+                            + zombie.getLabel().getName() + "\n";
+                }
             }
-        } else if(tableroJuego.getTablero()[x-1][y] == 1){ 
+        }else if(tableroJuego.getTablero()[x-1][y] == 1){ 
             coordenadas = new Point(x-1,y);
             zombie = posicionZombies.get(coordenadas);
-            if (defensa.getNombre().equals("Contacto")){
-                JLabel labelGolpe = new labelGolpes(path + "hitPlanta.png" , (x-1)*40, y*40);
-                pnlPrincipal.add(labelGolpe);
-                pnlPrincipal.setComponentZOrder(labelGolpe, 0);
-                pnlPrincipal.revalidate();
-                pnlPrincipal.repaint();
-                zombie.setVida(zombie.getVida()-defensa.getDaño());
-                Timer timer = new Timer(500, e -> {
-                    pnlPrincipal.remove(labelGolpe);
+            if (zombie.getNombre().equals("Volador")){
+                if(defensa.getNombre().equals("Aereo")){
+                    JLabel labelGolpe = new labelGolpes(path + "ataqueMultiple.png" , (x-1)*40, y*40);
+                    pnlPrincipal.add(labelGolpe);
+                    pnlPrincipal.setComponentZOrder(labelGolpe, 0);
                     pnlPrincipal.revalidate();
                     pnlPrincipal.repaint();
-                });
-                timer.setRepeats(false);
-                timer.start();
-       
-            } else if (defensa.getNombre().equals("MedioAlcance")){
-                JLabel labelGolpe = new labelGolpes(path + "ataqueMedio.png" , (x-1)*40, y*40);
-                pnlPrincipal.add(labelGolpe);
-                pnlPrincipal.setComponentZOrder(labelGolpe, 0);
-                pnlPrincipal.revalidate();
-                pnlPrincipal.repaint();
-                zombie.setVida(zombie.getVida()-defensa.getDaño());
-                Timer timer = new Timer(500, e -> {
-                    pnlPrincipal.remove(labelGolpe);
+                    zombie.setVida(zombie.getVida()-defensa.getDaño());
+                    muerteZombie(zombie, defensa, x-1, y);
+                    Timer timer = new Timer(500, e -> {
+                        pnlPrincipal.remove(labelGolpe);
+                        pnlPrincipal.revalidate();
+                        pnlPrincipal.repaint();
+                    });
+                    timer.setRepeats(false);
+                    timer.start();
+                    defensa.setGolpes(zombie.getGolpes()+1);
+                    infoFinal += "Defensa tipo: " + defensa.getLabel().getName() + " atacó a: " 
+                            + zombie.getLabel().getName() + "\n";
+                }else{
+                    System.out.println("No puede atacar a un volador");
+                }
+                
+            }else{
+                if (defensa.getNombre().equals("Contacto")){
+                    JLabel labelGolpe = new labelGolpes(path + "hitPlanta.png" , (x-1)*40, y*40);
+                    pnlPrincipal.add(labelGolpe);
+                    pnlPrincipal.setComponentZOrder(labelGolpe, 0);
                     pnlPrincipal.revalidate();
                     pnlPrincipal.repaint();
-                });
-                timer.setRepeats(false);
-                timer.start();
-         
-            }else if (defensa.getNombre().equals("Impacto") 
-                    || defensa.getNombre().equals("Multiple") ||defensa.getNombre().equals("Aereo")){
-                JLabel labelGolpe = new labelGolpes(path + "ataqueMultiple.png" , (x-1)*40, y*40);
-                pnlPrincipal.add(labelGolpe);
-                pnlPrincipal.setComponentZOrder(labelGolpe, 0);
-                pnlPrincipal.revalidate();
-                pnlPrincipal.repaint();
-                zombie.setVida(zombie.getVida()-defensa.getDaño());
-                Timer timer = new Timer(500, e -> {
-                    pnlPrincipal.remove(labelGolpe);
+                    zombie.setVida(zombie.getVida()-defensa.getDaño());
+                    muerteZombie(zombie, defensa, x-1, y);
+                    Timer timer = new Timer(500, e -> {
+                        pnlPrincipal.remove(labelGolpe);
+                        pnlPrincipal.revalidate();
+                        pnlPrincipal.repaint();
+                    });
+                    timer.setRepeats(false);
+                    timer.start();
+                    defensa.setGolpes(zombie.getGolpes()+1);
+                    infoFinal += "Defensa tipo: " + defensa.getLabel().getName() + " atacó a: " 
+                            + zombie.getLabel().getName() + "\n";
+
+                } else if (defensa.getNombre().equals("MedioAlcance")){
+                    JLabel labelGolpe = new labelGolpes(path + "ataqueMedio.png" , (x-1)*40, y*40);
+                    pnlPrincipal.add(labelGolpe);
+                    pnlPrincipal.setComponentZOrder(labelGolpe, 0);
                     pnlPrincipal.revalidate();
                     pnlPrincipal.repaint();
-                });
-                timer.setRepeats(false);
-                timer.start();
-       
+                    zombie.setVida(zombie.getVida()-defensa.getDaño());
+                    muerteZombie(zombie, defensa, x-1, y);
+                    Timer timer = new Timer(500, e -> {
+                        pnlPrincipal.remove(labelGolpe);
+                        pnlPrincipal.revalidate();
+                        pnlPrincipal.repaint();
+                    });
+                    timer.setRepeats(false);
+                    timer.start();
+                    defensa.setGolpes(zombie.getGolpes()+1);
+                    infoFinal += "Defensa tipo: " + defensa.getLabel().getName() + " atacó a: " 
+                            + zombie.getLabel().getName() + "\n";
+
+                }else if (defensa.getNombre().equals("Impacto") 
+                        || defensa.getNombre().equals("Multiple") ||defensa.getNombre().equals("Aereo")){
+                    JLabel labelGolpe = new labelGolpes(path + "ataqueMultiple.png" , (x-1)*40, y*40);
+                    pnlPrincipal.add(labelGolpe);
+                    pnlPrincipal.setComponentZOrder(labelGolpe, 0);
+                    pnlPrincipal.revalidate();
+                    pnlPrincipal.repaint();
+                    zombie.setVida(zombie.getVida()-defensa.getDaño());
+                    muerteZombie(zombie, defensa, x-1, y);
+                    Timer timer = new Timer(500, e -> {
+                        pnlPrincipal.remove(labelGolpe);
+                        pnlPrincipal.revalidate();
+                        pnlPrincipal.repaint();
+                    });
+                    timer.setRepeats(false);
+                    timer.start();
+                    defensa.setGolpes(zombie.getGolpes()+1);
+                    infoFinal += "Defensa tipo: " + defensa.getLabel().getName() + " atacó a: " 
+                            + zombie.getLabel().getName() + "\n";
+
+                }
             }
-            
         }else if(tableroJuego.getTablero()[x][y-1] == 1){ 
             coordenadas = new Point(x,y-1);
             zombie = posicionZombies.get(coordenadas);
-            if (defensa.getNombre().equals("Contacto")){
-                JLabel labelGolpe = new labelGolpes(path + "hitPlanta.png" , x*40, (y-1)*40);
-                pnlPrincipal.add(labelGolpe);
-                pnlPrincipal.setComponentZOrder(labelGolpe, 0);
-                pnlPrincipal.revalidate();
-                pnlPrincipal.repaint();
-                zombie.setVida(zombie.getVida()-defensa.getDaño());
-                Timer timer = new Timer(500, e -> {
-                    pnlPrincipal.remove(labelGolpe);
+            if (zombie.getNombre().equals("Volador")){
+                if(defensa.getNombre().equals("Aereo")){
+                    JLabel labelGolpe = new labelGolpes(path + "ataqueMultiple.png" , x*40, (y-1)*40);
+                    pnlPrincipal.add(labelGolpe);
+                    pnlPrincipal.setComponentZOrder(labelGolpe, 0);
                     pnlPrincipal.revalidate();
                     pnlPrincipal.repaint();
-                });
-                timer.setRepeats(false);
-                timer.start();
-    
-            } else if (defensa.getNombre().equals("MedioAlcance")){
-                JLabel labelGolpe = new labelGolpes(path + "ataqueMedio.png" , x*40, (y-1)*40);
-                pnlPrincipal.add(labelGolpe);
-                pnlPrincipal.setComponentZOrder(labelGolpe, 0);
-                pnlPrincipal.revalidate();
-                pnlPrincipal.repaint();
-                zombie.setVida(zombie.getVida()-defensa.getDaño());
-                Timer timer = new Timer(500, e -> {
-                    pnlPrincipal.remove(labelGolpe);
+                    zombie.setVida(zombie.getVida()-defensa.getDaño());
+                    muerteZombie(zombie, defensa, x, y-1);
+                    Timer timer = new Timer(500, e -> {
+                        pnlPrincipal.remove(labelGolpe);
+                        pnlPrincipal.revalidate();
+                        pnlPrincipal.repaint();
+                    });
+                    timer.setRepeats(false);
+                    timer.start();
+                    defensa.setGolpes(zombie.getGolpes()+1);
+                    infoFinal += "Defensa tipo: " + defensa.getLabel().getName() + " atacó a: " 
+                            + zombie.getLabel().getName() + "\n";
+                }
+                
+            }else{
+                if (defensa.getNombre().equals("Contacto")){
+                    JLabel labelGolpe = new labelGolpes(path + "hitPlanta.png" , x*40, (y-1)*40);
+                    pnlPrincipal.add(labelGolpe);
+                    pnlPrincipal.setComponentZOrder(labelGolpe, 0);
                     pnlPrincipal.revalidate();
                     pnlPrincipal.repaint();
-                });
-                timer.setRepeats(false);
-                timer.start();
+                    zombie.setVida(zombie.getVida()-defensa.getDaño());
+                    muerteZombie(zombie, defensa, x, y-1);
+                    Timer timer = new Timer(500, e -> {
+                        pnlPrincipal.remove(labelGolpe);
+                        pnlPrincipal.revalidate();
+                        pnlPrincipal.repaint();
+                    });
+                    timer.setRepeats(false);
+                    timer.start();
+                    defensa.setGolpes(zombie.getGolpes()+1);
+                    infoFinal += "Defensa tipo: " + defensa.getLabel().getName() + " atacó a: " 
+                            + zombie.getLabel().getName() + "\n";
 
-            }else if (defensa.getNombre().equals("Impacto") 
-                    || defensa.getNombre().equals("Multiple") ||defensa.getNombre().equals("Aereo")){
-                JLabel labelGolpe = new labelGolpes(path + "ataqueMultiple.png" , x*40, (y-1)*40);
-                pnlPrincipal.add(labelGolpe);
-                pnlPrincipal.setComponentZOrder(labelGolpe, 0);
-                pnlPrincipal.revalidate();
-                pnlPrincipal.repaint();
-                zombie.setVida(zombie.getVida()-defensa.getDaño());
-                Timer timer = new Timer(500, e -> {
-                    pnlPrincipal.remove(labelGolpe);
+                } else if (defensa.getNombre().equals("MedioAlcance")){
+                    JLabel labelGolpe = new labelGolpes(path + "ataqueMedio.png" , x*40, (y-1)*40);
+                    pnlPrincipal.add(labelGolpe);
+                    pnlPrincipal.setComponentZOrder(labelGolpe, 0);
                     pnlPrincipal.revalidate();
                     pnlPrincipal.repaint();
-                });
-                timer.setRepeats(false);
-                timer.start();
-          
+                    zombie.setVida(zombie.getVida()-defensa.getDaño());
+                    muerteZombie(zombie, defensa, x, y-1);
+                    Timer timer = new Timer(500, e -> {
+                        pnlPrincipal.remove(labelGolpe);
+                        pnlPrincipal.revalidate();
+                        pnlPrincipal.repaint();
+                    });
+                    timer.setRepeats(false);
+                    timer.start();
+                    defensa.setGolpes(zombie.getGolpes()+1);
+                    infoFinal += "Defensa tipo: " + defensa.getLabel().getName() + " atacó a: " 
+                            + zombie.getLabel().getName() + "\n";
+
+                }else if (defensa.getNombre().equals("Impacto") 
+                        || defensa.getNombre().equals("Multiple") ||defensa.getNombre().equals("Aereo")){
+                    JLabel labelGolpe = new labelGolpes(path + "ataqueMultiple.png" , x*40, (y-1)*40);
+                    pnlPrincipal.add(labelGolpe);
+                    pnlPrincipal.setComponentZOrder(labelGolpe, 0);
+                    pnlPrincipal.revalidate();
+                    pnlPrincipal.repaint();
+                    zombie.setVida(zombie.getVida()-defensa.getDaño());
+                    muerteZombie(zombie, defensa, x, y-1);
+                    Timer timer = new Timer(500, e -> {
+                        pnlPrincipal.remove(labelGolpe);
+                        pnlPrincipal.revalidate();
+                        pnlPrincipal.repaint();
+                    });
+                    timer.setRepeats(false);
+                    timer.start();
+                    defensa.setGolpes(zombie.getGolpes()+1);
+                    infoFinal += "Defensa tipo: " + defensa.getLabel().getName() + " atacó a: " 
+                            + zombie.getLabel().getName() + "\n";
+
+                }
             }
+            
         }
         
 
+    }
+    public void muerteZombie(Zombie zombie, Defensa defensa, int x, int y){
+        if(zombie.getVida() <= 0){
+            JLabel labelMuerto = zombie.getLabel();
+            pnlPrincipal.remove(labelMuerto);
+            tableroJuego.setValorEnCoordenadas(x, y, 0);
+            pnlPrincipal.revalidate();
+            pnlPrincipal.repaint();
+            zombies.remove(zombie);
+            infoFinal += "Defensa tipo: " + defensa.getLabel().getName() + " mató a: " 
+                        + zombie.getLabel().getName() + "\n";
+        
+        }
     }
     
     
@@ -1233,6 +1480,7 @@ public class Ventana extends javax.swing.JFrame {
     private void reiniciarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reiniciarActionPerformed
         if (perdedor == true){
             detenerThreads();
+            espaciosUtilizados = 0;
             zombies.clear();
             defensas.clear();
             iniciarJuego(nivel);

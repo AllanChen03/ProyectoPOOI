@@ -8,8 +8,6 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
 
 public class FileManager {
     private static final String NOMBRE_ARCHIVO = "C:\\Users\\User\\Documents\\Universidad\\II Semestre 2023"

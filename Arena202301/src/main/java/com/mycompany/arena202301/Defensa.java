@@ -21,6 +21,14 @@ public class Defensa extends Personaje{
         return nombre;
     }
 
+    public int getGolpes() {
+        return golpes;
+    }
+
+    public void setGolpes(int golpes) {
+        this.golpes = golpes;
+    }
+
 
     public int getVida() {
         return vida;
